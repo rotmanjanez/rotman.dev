@@ -37,21 +37,21 @@ jobs:
         with:
           name: dist
           path: dist/
+      - name: Install sshpass
+        run: sudo apt-get install -y sshpass
       - name: Package and deploy via SSH
         env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SSH_PW: ${{ secrets.SSH_PW }}
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_USER: ${{ secrets.SSH_USER }}
           DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
         run: |
           mkdir -p ~/.ssh
-          echo "$SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
-          chmod 600 ~/.ssh/deploy_key
           ssh-keyscan -H "$SSH_HOST" >> ~/.ssh/known_hosts 2>/dev/null
 
           tar -czf dist.tar.gz -C dist .
-          scp -i ~/.ssh/deploy_key dist.tar.gz "${SSH_USER}@${SSH_HOST}:/tmp/dist.tar.gz"
-          ssh -i ~/.ssh/deploy_key "${SSH_USER}@${SSH_HOST}" "
+          sshpass -p "$SSH_PW" scp dist.tar.gz "${SSH_USER}@${SSH_HOST}:/tmp/dist.tar.gz"
+          sshpass -p "$SSH_PW" ssh "${SSH_USER}@${SSH_HOST}" "
             rm -rf ${DEPLOY_PATH}/*
             tar -xzf /tmp/dist.tar.gz -C ${DEPLOY_PATH}
             rm /tmp/dist.tar.gz
