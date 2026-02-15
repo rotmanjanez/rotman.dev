@@ -1,0 +1,118 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" style="overflow:visible">
+  <!-- Body -->
+  <rect x="12" y="52" width="40" height="12" fill="#3a3a3a"/>
+
+  <!-- Head: 6 lines -->
+  <path d="M12 12 L52 12 L52 42 L42 56 L22 56 L12 42 Z" fill="#edcbad"/>
+
+  <!-- Hair - dark brown base -->
+  <rect id="hair-base" x="8" y="8" width="48" height="8" fill="#3a2718" transform="rotate(3 32 12)"/>
+
+  <!-- Hair - blonde spiky top -->
+  <rect id="hair-top" x="4" y="4" width="56" height="7" fill="#d4b878" transform="rotate(-5 32 7)"/>
+
+  <!-- Eyes -->
+  <path id="left-eye" d="M18 32 Q22 28 26 32" stroke="#3a2718" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <path id="right-eye" d="M38 32 Q42 28 46 32" stroke="#3a2718" stroke-width="2" fill="none" stroke-linecap="round"/>
+
+  <!-- Mouth -->
+  <line id="mouth" x1="28" y1="46" x2="36" y2="46" stroke="#c49080" stroke-width="1.2" stroke-linecap="round"/>
+
+  <script>
+    var le = document.getElementById('left-eye');
+    var re = document.getElementById('right-eye');
+    var mo = document.getElementById('mouth');
+
+    var openL = 'M18 32 Q22 28 26 32';
+    var openR = 'M38 32 Q42 28 46 32';
+    var closedL = 'M18 32 Q22 33 26 32';
+    var closedR = 'M38 32 Q42 33 46 32';
+    var smileOpen = 'M28 44 Q32 48 36 44';
+
+    function blink() {
+      le.setAttribute('d', closedL);
+      re.setAttribute('d', closedR);
+      setTimeout(function() {
+        le.setAttribute('d', openL);
+        re.setAttribute('d', openR);
+      }, 150);
+    }
+
+    function smile() {
+      mo.setAttribute('x1', '27');
+      mo.setAttribute('x2', '37');
+      var orig = mo.cloneNode(false);
+      mo.parentNode.insertBefore(orig, mo);
+      mo.remove();
+      var path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      path.setAttribute('d', smileOpen);
+      path.setAttribute('stroke', '#c49080');
+      path.setAttribute('stroke-width', '1.2');
+      path.setAttribute('fill', 'none');
+      path.setAttribute('stroke-linecap', 'round');
+      path.setAttribute('id', 'mouth');
+      orig.parentNode.insertBefore(path, orig);
+      orig.remove();
+      mo = path;
+      setTimeout(function() {
+        var line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        line.setAttribute('x1', '28');
+        line.setAttribute('y1', '46');
+        line.setAttribute('x2', '36');
+        line.setAttribute('y2', '46');
+        line.setAttribute('stroke', '#c49080');
+        line.setAttribute('stroke-width', '1.2');
+        line.setAttribute('stroke-linecap', 'round');
+        line.setAttribute('id', 'mouth');
+        mo.parentNode.insertBefore(line, mo);
+        mo.remove();
+        mo = line;
+      }, 800);
+    }
+
+    function randomBlink() {
+      blink();
+      setTimeout(randomBlink, 2000 + Math.random() * 4000);
+    }
+
+    function randomSmile() {
+      smile();
+      setTimeout(randomSmile, 6000 + Math.random() * 8000);
+    }
+
+    setTimeout(randomBlink, 1000 + Math.random() * 2000);
+    setTimeout(randomSmile, 3000 + Math.random() * 4000);
+
+    var hb = document.getElementById('hair-base');
+    var ht = document.getElementById('hair-top');
+    hb.style.transformOrigin = '32px 12px';
+    ht.style.transformOrigin = '32px 7px';
+
+    function hairSurprise() {
+      ht.animate([
+        { transform: 'rotate(-5deg)', offset: 0 },
+        { transform: 'rotate(-14deg) translateY(-5px)', offset: 0.15 },
+        { transform: 'rotate(6deg) translateY(-6px)', offset: 0.35 },
+        { transform: 'rotate(-8deg) translateY(-3px)', offset: 0.55 },
+        { transform: 'rotate(-3deg) translateY(-1px)', offset: 0.75 },
+        { transform: 'rotate(-5deg)', offset: 1 },
+      ], { duration: 700, easing: 'ease-in-out' });
+
+      hb.animate([
+        { transform: 'rotate(3deg)', offset: 0 },
+        { transform: 'rotate(0deg) translateY(-3px)', offset: 0.15 },
+        { transform: 'rotate(-3deg) translateY(-4px)', offset: 0.35 },
+        { transform: 'rotate(5deg) translateY(-2px)', offset: 0.55 },
+        { transform: 'rotate(2deg) translateY(-1px)', offset: 0.75 },
+        { transform: 'rotate(3deg)', offset: 1 },
+      ], { duration: 700, easing: 'ease-in-out' });
+    }
+
+    function randomSurprise() {
+      hairSurprise();
+      setTimeout(randomSurprise, 5000 + Math.random() * 7000);
+    }
+
+    setTimeout(randomSurprise, 2000 + Math.random() * 3000);
+  </script>
+</svg>

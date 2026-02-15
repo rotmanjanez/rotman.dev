@@ -41,6 +41,9 @@ jobs:
         if: matrix.site == 'rotman.dev'
       - name: Build ${{ matrix.site }}
         run: ${{ matrix.build_cmd }}
+      - name: Copy API files for rotman.dev
+        if: matrix.site == 'rotman.dev'
+        run: cp -r api dist/
       - uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.site }}
