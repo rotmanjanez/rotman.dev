@@ -1,0 +1,117 @@
+---
+interface Props {
+	class?: string;
+}
+
+const { class: className } = Astro.props;
+---
+
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" class:list={['avatar', className]} style="overflow:visible">
+  <rect x="12" y="52" width="40" height="12" fill="#3a3a3a"/>
+  <path d="M12 12 L52 12 L52 42 L42 56 L22 56 L12 42 Z" fill="#edcbad"/>
+  <rect id="hair-base" x="8" y="8" width="48" height="8" fill="#3a2718" transform="rotate(3 32 12)"/>
+  <rect id="hair-top" x="4" y="4" width="56" height="7" fill="#d4b878" transform="rotate(-5 32 7)"/>
+  <path id="left-eye" d="M18 32 Q22 28 26 32" stroke="#3a2718" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <path id="right-eye" d="M38 32 Q42 28 46 32" stroke="#3a2718" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <line id="mouth" x1="28" y1="46" x2="36" y2="46" stroke="#c49080" stroke-width="1.2" stroke-linecap="round"/>
+</svg>
+
+<script>
+  function initAvatar() {
+    const le = document.getElementById('left-eye');
+    const re = document.getElementById('right-eye');
+    let mo = document.getElementById('mouth');
+
+    if (!le || !re || !mo) return;
+
+    function blink() {
+      le.setAttribute('d', 'M18 32 Q22 33 26 32');
+      re.setAttribute('d', 'M38 32 Q42 33 46 32');
+      setTimeout(() => {
+        le.setAttribute('d', 'M18 32 Q22 28 26 32');
+        re.setAttribute('d', 'M38 32 Q42 28 46 32');
+      }, 150);
+    }
+
+    function smile() {
+      const p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      p.setAttribute('d', 'M28 44 Q32 48 36 44');
+      p.setAttribute('stroke', '#c49080');
+      p.setAttribute('stroke-width', '1.2');
+      p.setAttribute('fill', 'none');
+      p.setAttribute('stroke-linecap', 'round');
+      p.setAttribute('id', 'mouth');
+      mo.replaceWith(p);
+      mo = p;
+      setTimeout(() => {
+        const l = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        l.setAttribute('x1', '28');
+        l.setAttribute('y1', '46');
+        l.setAttribute('x2', '36');
+        l.setAttribute('y2', '46');
+        l.setAttribute('stroke', '#c49080');
+        l.setAttribute('stroke-width', '1.2');
+        l.setAttribute('stroke-linecap', 'round');
+        l.setAttribute('id', 'mouth');
+        mo.replaceWith(l);
+        mo = l;
+      }, 800);
+    }
+
+    (function loop() {
+      blink();
+      setTimeout(loop, 2000 + Math.random() * 4000);
+    })();
+
+    setTimeout(function smileLoop() {
+      smile();
+      setTimeout(smileLoop, 6000 + Math.random() * 8000);
+    }, 3000 + Math.random() * 4000);
+
+    const hairBase = document.getElementById('hair-base');
+    const hairTop = document.getElementById('hair-top');
+
+    if (hairBase && hairTop) {
+      hairBase.style.transformOrigin = '32px 12px';
+      hairTop.style.transformOrigin = '32px 7px';
+
+      function hairSurprise() {
+        hairTop.animate([
+          { transform: 'rotate(-5deg)', offset: 0 },
+          { transform: 'rotate(-14deg) translateY(-5px)', offset: 0.15 },
+          { transform: 'rotate(6deg) translateY(-6px)', offset: 0.35 },
+          { transform: 'rotate(-8deg) translateY(-3px)', offset: 0.55 },
+          { transform: 'rotate(-3deg) translateY(-1px)', offset: 0.75 },
+          { transform: 'rotate(-5deg)', offset: 1 },
+        ], { duration: 700, easing: 'ease-in-out' });
+
+        hairBase.animate([
+          { transform: 'rotate(3deg)', offset: 0 },
+          { transform: 'rotate(0deg) translateY(-3px)', offset: 0.15 },
+          { transform: 'rotate(-3deg) translateY(-4px)', offset: 0.35 },
+          { transform: 'rotate(5deg) translateY(-2px)', offset: 0.55 },
+          { transform: 'rotate(2deg) translateY(-1px)', offset: 0.75 },
+          { transform: 'rotate(3deg)', offset: 1 },
+        ], { duration: 700, easing: 'ease-in-out' });
+      }
+
+      setTimeout(function surpriseLoop() {
+        hairSurprise();
+        setTimeout(surpriseLoop, 5000 + Math.random() * 7000);
+      }, 2000 + Math.random() * 3000);
+    }
+  }
+
+  initAvatar();
+
+  document.addEventListener('astro:page-load', initAvatar);
+</script>
+
+<style>
+  .avatar {
+    width: 5rem;
+    height: 5rem;
+    background: transparent;
+    border: none;
+  }
+</style>

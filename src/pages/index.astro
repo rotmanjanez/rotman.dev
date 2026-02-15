@@ -1,5 +1,5 @@
 ---
-
+import Avatar from "../components/Avatar.astro";
 ---
 
 <html lang="en">
@@ -18,24 +18,16 @@
 	</head>
 	<body>
 		<header>
-			<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" class="avatar" style="overflow:visible">
-				<rect x="12" y="52" width="40" height="12" fill="#3a3a3a"/>
-				<path d="M12 12 L52 12 L52 42 L42 56 L22 56 L12 42 Z" fill="#edcbad"/>
-				<rect id="hair-base" x="8" y="8" width="48" height="8" fill="#3a2718" transform="rotate(3 32 12)"/>
-				<rect id="hair-top" x="4" y="4" width="56" height="7" fill="#d4b878" transform="rotate(-5 32 7)"/>
-				<path id="left-eye" d="M18 32 Q22 28 26 32" stroke="#3a2718" stroke-width="2" fill="none" stroke-linecap="round"/>
-				<path id="right-eye" d="M38 32 Q42 28 46 32" stroke="#3a2718" stroke-width="2" fill="none" stroke-linecap="round"/>
-				<line id="mouth" x1="28" y1="46" x2="36" y2="46" stroke="#c49080" stroke-width="1.2" stroke-linecap="round"/>
-			</svg>
+			<Avatar />
 			<div class="header-text">
 				<h1>Janez Rotman</h1>
 				<div class="subtitle">MSc Informatics at TUM | Munich</div>
+				<nav>
+					<a href="mailto:janez@janez.at">janez@janez.at</a>
+					<a href="https://github.com/rotmanjanez">GitHub</a>
+					<a href="https://linkedin.com/in/janez-rotman">LinkedIn</a>
+				</nav>
 			</div>
-			<nav>
-				<a href="mailto:janez@janez.at">janez@janez.at</a>
-				<a href="https://github.com/rotmanjanez">GitHub</a>
-				<a href="https://linkedin.com/in/janez-rotman">LinkedIn</a>
-			</nav>
 		</header>
 
 		<main>
@@ -44,39 +36,10 @@
 				<p>
 					I'm a master's student in informatics at the Technical University
 					of Munich, specializing in compiler construction and low-level systems.
-					Most of my work involves writing C and C++ for performance-critical code - parsers,
-					code generators, instruction selection. I find it oddly satisfying to squeeze
-					out every cycle and cache miss. Currently interested in IR design, register
-					allocation algorithms, and how modern CPUs actually execute code (not the
-					idealized textbook version). On the side, I run a small photography business.
+					Most of my work involves writing C and C++ for performance-critical code.
+					Currently interested in IR design, register allocation algorithms, and how modern CPUs actually execute code.
+					On the side, I run a small photography business.
 				</p>
-			</section>
-
-			<section>
-				<h2>Never Have I Ever</h2>
-				<p>
-					...piped curl directly into sh.
-				</p>
-				<pre style="background: var(--bg); border: 1px solid var(--border); border-radius: 4px; padding: 0.75rem; overflow-x: auto; font-size: 0.85rem; margin-top: 0.75rem;"><code>curl https://rotman.dev/sh | sh</code></pre>
-				<p style="margin-top: 0.5rem; font-size: 0.88rem; color: var(--fg-muted);">
-					(It's safe, I promise. Probably.)
-				</p>
-			</section>
-
-			<section>
-				<h2>Projects</h2>
-				<div class="entry">
-					<div class="name">Toy Compiler Backend</div>
-					<div class="info">An LLVM-like compiler backend in C, focused on simplicity</div>
-				</div>
-				<div class="entry">
-					<div class="name">Raspsim</div>
-					<div class="info">Cycle-accurate x86 simulator with Python bindings |C++</div>
-				</div>
-				<div class="entry">
-					<div class="name">RoboCup Junior</div>
-					<div class="info">Soccer robot hardware &amp; embedded software |1st place Austrian Open 2019</div>
-				</div>
 			</section>
 
 			<section>
@@ -116,85 +79,6 @@
 		<footer>
 			(c) 2026 Janez Rotman
 		</footer>
-		<script>
-			const le = document.getElementById('left-eye');
-			const re = document.getElementById('right-eye');
-			let mo = document.getElementById('mouth');
-
-			function blink() {
-				le.setAttribute('d', 'M18 32 Q22 33 26 32');
-				re.setAttribute('d', 'M38 32 Q42 33 46 32');
-				setTimeout(() => {
-					le.setAttribute('d', 'M18 32 Q22 28 26 32');
-					re.setAttribute('d', 'M38 32 Q42 28 46 32');
-				}, 150);
-			}
-
-			function smile() {
-				const p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-				p.setAttribute('d', 'M28 44 Q32 48 36 44');
-				p.setAttribute('stroke', '#c49080');
-				p.setAttribute('stroke-width', '1.2');
-				p.setAttribute('fill', 'none');
-				p.setAttribute('stroke-linecap', 'round');
-				p.setAttribute('id', 'mouth');
-				mo.replaceWith(p);
-				mo = p;
-				setTimeout(() => {
-					const l = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-					l.setAttribute('x1', '28');
-					l.setAttribute('y1', '46');
-					l.setAttribute('x2', '36');
-					l.setAttribute('y2', '46');
-					l.setAttribute('stroke', '#c49080');
-					l.setAttribute('stroke-width', '1.2');
-					l.setAttribute('stroke-linecap', 'round');
-					l.setAttribute('id', 'mouth');
-					mo.replaceWith(l);
-					mo = l;
-				}, 800);
-			}
-
-			(function loop() {
-				blink();
-				setTimeout(loop, 2000 + Math.random() * 4000);
-			})();
-
-			setTimeout(function smileLoop() {
-				smile();
-				setTimeout(smileLoop, 6000 + Math.random() * 8000);
-			}, 3000 + Math.random() * 4000);
-
-			const hairBase = document.getElementById('hair-base');
-			const hairTop = document.getElementById('hair-top');
-			hairBase.style.transformOrigin = '32px 12px';
-			hairTop.style.transformOrigin = '32px 7px';
-
-			function hairSurprise() {
-				hairTop.animate([
-					{ transform: 'rotate(-5deg)', offset: 0 },
-					{ transform: 'rotate(-14deg) translateY(-5px)', offset: 0.15 },
-					{ transform: 'rotate(6deg) translateY(-6px)', offset: 0.35 },
-					{ transform: 'rotate(-8deg) translateY(-3px)', offset: 0.55 },
-					{ transform: 'rotate(-3deg) translateY(-1px)', offset: 0.75 },
-					{ transform: 'rotate(-5deg)', offset: 1 },
-				], { duration: 700, easing: 'ease-in-out' });
-
-				hairBase.animate([
-					{ transform: 'rotate(3deg)', offset: 0 },
-					{ transform: 'rotate(0deg) translateY(-3px)', offset: 0.15 },
-					{ transform: 'rotate(-3deg) translateY(-4px)', offset: 0.35 },
-					{ transform: 'rotate(5deg) translateY(-2px)', offset: 0.55 },
-					{ transform: 'rotate(2deg) translateY(-1px)', offset: 0.75 },
-					{ transform: 'rotate(3deg)', offset: 1 },
-				], { duration: 700, easing: 'ease-in-out' });
-			}
-
-			setTimeout(function surpriseLoop() {
-				hairSurprise();
-				setTimeout(surpriseLoop, 5000 + Math.random() * 7000);
-			}, 2000 + Math.random() * 3000);
-		</script>
 	</body>
 </html>
 
@@ -208,16 +92,13 @@
 	header {
 		margin-bottom: 2.5rem;
 		display: flex;
-		flex-wrap: wrap;
-		align-items: center;
-		gap: 0 1rem;
+		align-items: flex-start;
+		gap: 1rem;
 	}
 
-	.avatar {
-		width: 4rem;
-		height: 4rem;
-		background: transparent;
-		border: none;
+	.header-text {
+		flex: 1 1 auto;
+		min-width: 0;
 	}
 
 	header h1 {
@@ -230,14 +111,14 @@
 	header .subtitle {
 		color: var(--fg-muted);
 		font-size: 0.9rem;
-		margin-bottom: 0.6rem;
+		margin-bottom: 0.5rem;
 	}
 
 	header nav {
 		display: flex;
+		flex-wrap: wrap;
 		gap: 1.25rem;
 		font-size: 0.85rem;
-		width: 100%;
 	}
 
 	a {
