@@ -66,10 +66,11 @@ jobs:
           mkdir -p ~/.ssh
           ssh-keyscan -H "$SSH_HOST" >> ~/.ssh/known_hosts 2>/dev/null
 
+          ARCHIVE="/tmp/deploy-${{ matrix.site }}.tar.gz"
           tar -czf dist.tar.gz -C dist .
-          sshpass -p "$SSH_PW" scp dist.tar.gz "${SSH_USER}@${SSH_HOST}:/tmp/dist.tar.gz"
+          sshpass -p "$SSH_PW" scp dist.tar.gz "${SSH_USER}@${SSH_HOST}:${ARCHIVE}"
           sshpass -p "$SSH_PW" ssh "${SSH_USER}@${SSH_HOST}" "
             rm -rf ${DEPLOY_PATH}/*
-            tar -xzf /tmp/dist.tar.gz -C ${DEPLOY_PATH}
-            rm /tmp/dist.tar.gz
+            tar -xzf ${ARCHIVE} -C ${DEPLOY_PATH}
+            rm ${ARCHIVE}
           "
