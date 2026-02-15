@@ -1,0 +1,223 @@
+:root {
+	--bg-color: #0a0a0a;
+	--text-color: #e0e0e0;
+	--accent-color: #64ffda;
+	--secondary-accent: #bd93f9;
+	--orb-core: #ffffff;
+	--orb-glow: rgba(100, 255, 218, 0.6);
+	--error-color: #ff5555;
+	--font-primary: "Courier New", Courier, monospace; /* Techy vibe */
+	--font-display: "Inter", sans-serif;
+}
+
+body {
+	background-color: var(--bg-color);
+	color: var(--text-color);
+	margin: 0;
+	font-family: var(--font-display);
+	overflow: hidden; /* Prevent scrollbars to maintain immersion */
+}
+
+.oracle-container {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	height: 100vh;
+	width: 100vw;
+	position: relative;
+	background: radial-gradient(circle at center, #1a1a1a 0%, #000000 100%);
+}
+
+/* ORACLE ORB STYLES */
+.orb-wrapper {
+	position: relative;
+	width: 200px;
+	height: 200px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	margin-bottom: 3rem;
+	transition: transform 0.5s ease-out;
+}
+
+.orb {
+	width: 100px;
+	height: 100px;
+	border-radius: 50%;
+	background: var(--orb-core);
+	box-shadow:
+		0 0 40px var(--orb-glow),
+		0 0 80px var(--orb-glow);
+	animation: breathe 4s infinite ease-in-out;
+	position: relative;
+	z-index: 2;
+}
+
+.orb.thinking {
+	background: var(--secondary-accent);
+	box-shadow:
+		0 0 60px var(--secondary-accent),
+		0 0 100px var(--secondary-accent);
+	animation: pulse-fast 0.8s infinite linear;
+}
+
+.orb.glitchy {
+	background: var(--error-color);
+	box-shadow: 0 0 40px var(--error-color);
+	animation: glitch-anim 0.3s infinite steps(2);
+}
+
+.rings {
+	position: absolute;
+	border: 1px solid rgba(255, 255, 255, 0.1);
+	border-radius: 50%;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	animation: rotate 10s linear infinite;
+}
+
+.ring-1 {
+	width: 140px;
+	height: 140px;
+	border-color: rgba(100, 255, 218, 0.2);
+	animation-duration: 12s;
+}
+.ring-2 {
+	width: 180px;
+	height: 180px;
+	border-color: rgba(189, 147, 249, 0.15);
+	animation-direction: reverse;
+	animation-duration: 15s;
+}
+.ring-3 {
+	width: 240px;
+	height: 240px;
+	border-style: dashed;
+	opacity: 0.1;
+	animation-duration: 20s;
+}
+
+/* CHAT INTERFACE */
+.chat-interface {
+	width: 100%;
+	max-width: 600px;
+	text-align: center;
+	z-index: 10;
+	padding: 0 20px;
+}
+
+.response-area {
+	min-height: 80px;
+	margin-bottom: 2rem;
+	font-family: var(--font-primary);
+	font-size: 1.2rem;
+	line-height: 1.6;
+	color: var(--accent-color);
+	text-shadow: 0 0 10px rgba(100, 255, 218, 0.3);
+}
+
+.input-area {
+	position: relative;
+	width: 100%;
+}
+
+.oracle-input {
+	width: 100%;
+	padding: 15px 20px;
+	background: rgba(255, 255, 255, 0.05);
+	border: 1px solid rgba(255, 255, 255, 0.1);
+	border-radius: 30px;
+	color: #fff;
+	font-size: 1rem;
+	outline: none;
+	transition: all 0.3s ease;
+	backdrop-filter: blur(5px);
+}
+
+.oracle-input:focus {
+	background: rgba(255, 255, 255, 0.1);
+	border-color: var(--accent-color);
+	box-shadow: 0 0 20px rgba(100, 255, 218, 0.1);
+}
+
+.oracle-input::placeholder {
+	color: rgba(255, 255, 255, 0.3);
+}
+
+/* ANIMATIONS */
+@keyframes breathe {
+	0%,
+	100% {
+		transform: scale(1);
+		opacity: 0.8;
+	}
+	50% {
+		transform: scale(1.1);
+		opacity: 1;
+	}
+}
+
+@keyframes pulse-fast {
+	0% {
+		transform: scale(0.95);
+		opacity: 0.7;
+	}
+	50% {
+		transform: scale(1.05);
+		opacity: 1;
+	}
+	100% {
+		transform: scale(0.95);
+		opacity: 0.7;
+	}
+}
+
+@keyframes rotate {
+	from {
+		transform: translate(-50%, -50%) rotate(0deg);
+	}
+	to {
+		transform: translate(-50%, -50%) rotate(360deg);
+	}
+}
+
+@keyframes glitch-anim {
+	0% {
+		transform: translate(2px, 0);
+	}
+	25% {
+		transform: translate(-2px, 2px);
+	}
+	50% {
+		transform: translate(2px, -2px);
+	}
+	75% {
+		transform: translate(-2px, 0);
+	}
+	100% {
+		transform: translate(0, 0);
+	}
+}
+
+/* UTILS */
+.hidden {
+	opacity: 0;
+	pointer-events: none;
+}
+
+.fade-in {
+	animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+	from {
+		opacity: 0;
+		transform: translateY(10px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}

@@ -27,6 +27,12 @@ jobs:
           - site: claude.rotman.dev
             build_cmd: "true"
             dist_path: claude
+          - site: chatgpt.rotman.dev
+            build_cmd: "true"
+            dist_path: chatgpt
+          - site: gemini.rotman.dev
+            build_cmd: cd gemini && npm ci && npm run build
+            dist_path: gemini/dist
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
@@ -49,6 +55,8 @@ jobs:
         include:
           - site: rotman.dev
           - site: claude.rotman.dev
+          - site: chatgpt.rotman.dev
+          - site: gemini.rotman.dev
     steps:
       - uses: actions/download-artifact@v4
         with:
@@ -70,6 +78,7 @@ jobs:
           tar -czf dist.tar.gz -C dist .
           sshpass -p "$SSH_PW" scp dist.tar.gz "${SSH_USER}@${SSH_HOST}:${ARCHIVE}"
           sshpass -p "$SSH_PW" ssh "${SSH_USER}@${SSH_HOST}" "
+            mkdir -p ${DEPLOY_PATH}
             rm -rf ${DEPLOY_PATH}/*
             tar -xzf ${ARCHIVE} -C ${DEPLOY_PATH}
             rm ${ARCHIVE}
