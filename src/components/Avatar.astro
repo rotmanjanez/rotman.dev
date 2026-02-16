@@ -17,48 +17,44 @@ const { class: className } = Astro.props;
 </svg>
 
 <script>
-  const AVATAR_STATE_KEY = '__avatarAnimationState';
+  let activeTimeouts = new Set<number>();
+  let activeRoot: Element | null = null;
 
   function clearAvatarState() {
-    const state = window[AVATAR_STATE_KEY];
-    if (!state) return;
-
-    state.timeouts.forEach((timeoutId) => clearTimeout(timeoutId));
-    state.timeouts.clear();
-    delete window[AVATAR_STATE_KEY];
+    activeTimeouts.forEach((id) => clearTimeout(id));
+    activeTimeouts.clear();
+    activeRoot = null;
   }
 
   function initAvatar() {
-    const runningState = window[AVATAR_STATE_KEY];
-    if (runningState?.root?.isConnected) return;
+    if (activeRoot?.isConnected) return;
 
     clearAvatarState();
 
     const root = document.querySelector('svg.avatar');
     const le = document.getElementById('left-eye');
     const re = document.getElementById('right-eye');
-    let mo = document.getElementById('mouth');
+    let mo: Element | null = document.getElementById('mouth');
 
     if (!root || !le || !re || !mo) return;
+    activeRoot = root;
 
-    const timeouts = new Set();
-
-    const schedule = (callback, delay) => {
+    const schedule = (callback: () => void, delay: number) => {
       const timeoutId = window.setTimeout(() => {
-        timeouts.delete(timeoutId);
+        activeTimeouts.delete(timeoutId);
         callback();
       }, delay);
 
-      timeouts.add(timeoutId);
+      activeTimeouts.add(timeoutId);
       return timeoutId;
     };
 
     function blink() {
-      le.setAttribute('d', 'M18 32 Q22 33 26 32');
-      re.setAttribute('d', 'M38 32 Q42 33 46 32');
+      le!.setAttribute('d', 'M18 32 Q22 33 26 32');
+      re!.setAttribute('d', 'M38 32 Q42 33 46 32');
       schedule(() => {
-        le.setAttribute('d', 'M18 32 Q22 28 26 32');
-        re.setAttribute('d', 'M38 32 Q42 28 46 32');
+        le!.setAttribute('d', 'M18 32 Q22 28 26 32');
+        re!.setAttribute('d', 'M38 32 Q42 28 46 32');
       }, 150);
     }
 
@@ -70,7 +66,7 @@ const { class: className } = Astro.props;
       p.setAttribute('fill', 'none');
       p.setAttribute('stroke-linecap', 'round');
       p.setAttribute('id', 'mouth');
-      mo.replaceWith(p);
+      mo!.replaceWith(p);
       mo = p;
       schedule(() => {
         const l = document.createElementNS('http://www.w3.org/2000/svg', 'line');
@@ -82,7 +78,7 @@ const { class: className } = Astro.props;
         l.setAttribute('stroke-width', '1.2');
         l.setAttribute('stroke-linecap', 'round');
         l.setAttribute('id', 'mouth');
-        mo.replaceWith(l);
+        mo!.replaceWith(l);
         mo = l;
       }, 800);
     }
@@ -107,7 +103,7 @@ const { class: className } = Astro.props;
       hairTop.style.transformOrigin = '32px 7px';
 
       function hairSurprise() {
-        hairTop.animate([
+        hairTop!.animate([
           { transform: 'rotate(-5deg)', offset: 0 },
           { transform: 'rotate(-14deg) translateY(-5px)', offset: 0.15 },
           { transform: 'rotate(6deg) translateY(-6px)', offset: 0.35 },
@@ -116,7 +112,7 @@ const { class: className } = Astro.props;
           { transform: 'rotate(-5deg)', offset: 1 },
         ], { duration: 700, easing: 'ease-in-out' });
 
-        hairBase.animate([
+        hairBase!.animate([
           { transform: 'rotate(3deg)', offset: 0 },
           { transform: 'rotate(0deg) translateY(-3px)', offset: 0.15 },
           { transform: 'rotate(-3deg) translateY(-4px)', offset: 0.35 },
@@ -134,15 +130,9 @@ const { class: className } = Astro.props;
     }
 
     const cleanup = () => {
-      timeouts.forEach((timeoutId) => clearTimeout(timeoutId));
-      timeouts.clear();
-
-      if (window[AVATAR_STATE_KEY]?.root === root) {
-        delete window[AVATAR_STATE_KEY];
-      }
+      if (activeRoot === root) clearAvatarState();
     };
 
-    window[AVATAR_STATE_KEY] = { root, timeouts, cleanup };
     document.addEventListener('astro:before-swap', cleanup, { once: true });
     window.addEventListener('pagehide', cleanup, { once: true });
   }
