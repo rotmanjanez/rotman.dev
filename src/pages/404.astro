@@ -1,0 +1,102 @@
+---
+const url = Astro.url.pathname;
+const method = Astro.request.method;
+const referer = Astro.request.headers.get("referer") || "(none)";
+const host = Astro.url.host;
+const protocol = Astro.url.protocol.replace(":", "");
+---
+
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<link rel="icon" type="image/svg+xml" href="/avatar.svg" />
+		<link rel="apple-touch-icon" href="/avatar.svg" />
+		<meta name="viewport" content="width=device-width" />
+		<meta name="color-scheme" content="light dark" />
+		<title>404 - Janez Rotman</title>
+		<style is:global>
+			@import '../styles/global.css';
+		</style>
+	</head>
+	<body>
+		<div class="container">
+			<pre class="stacktrace"><code id="trace">{`FAIL route_resolve (${method} ${host}${url})
+
+  AssertionError: expected 200, received 404 (Not Found)
+
+  at fetch_resource (${protocol}://${host}${url})
+  at resolve_route (protocol=${protocol.toUpperCase()}/1.1)
+  at match_handler (referer=${referer})
+`}</code></pre>
+			<a href="/">back to safety</a>
+		</div>
+
+		<script>
+			const el = document.getElementById("trace");
+			if (el) {
+				const dark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+				const lines = [
+					"  at parse_headers (ua=" + navigator.userAgent + ")",
+					"  at render_viewport (size=" + window.innerWidth + "x" + window.innerHeight + ", screen=" + screen.width + "x" + screen.height + "@" + devicePixelRatio + "x)",
+					"  at apply_theme (scheme=" + (dark ? "dark" : "light") + ", lang=" + navigator.language + ")",
+				];
+				el.textContent += lines.join("\n") + "\n";
+			}
+		</script>
+	</body>
+</html>
+
+<style>
+	body {
+		max-width: 720px;
+		margin: 0 auto;
+		padding: 3rem 1.25rem 4rem;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		min-height: 100vh;
+	}
+
+	.container {
+		width: 100%;
+		text-align: center;
+	}
+
+	.stacktrace {
+		text-align: left;
+		font-size: 0.88rem;
+		line-height: 1.6;
+		margin-bottom: 2rem;
+		display: inline-block;
+		padding: 1.5rem 2rem;
+		max-width: 100%;
+	}
+
+	.stacktrace code {
+		font-size: inherit;
+		white-space: pre-wrap;
+		word-break: break-all;
+	}
+
+	a {
+		color: var(--link);
+		text-decoration: none;
+		font-size: 0.9rem;
+	}
+
+	a:hover {
+		color: var(--link-hover);
+		text-decoration: underline;
+	}
+
+	@media (max-width: 500px) {
+		body {
+			padding: 2rem 1rem 3rem;
+		}
+
+		.stacktrace {
+			font-size: 0.72rem;
+			padding: 1rem 1.25rem;
+		}
+	}
+</style>
