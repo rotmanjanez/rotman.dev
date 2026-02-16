@@ -17,17 +17,46 @@ const { class: className } = Astro.props;
 </svg>
 
 <script>
+  const AVATAR_STATE_KEY = '__avatarAnimationState';
+
+  function clearAvatarState() {
+    const state = window[AVATAR_STATE_KEY];
+    if (!state) return;
+
+    state.timeouts.forEach((timeoutId) => clearTimeout(timeoutId));
+    state.timeouts.clear();
+    delete window[AVATAR_STATE_KEY];
+  }
+
   function initAvatar() {
+    const runningState = window[AVATAR_STATE_KEY];
+    if (runningState?.root?.isConnected) return;
+
+    clearAvatarState();
+
+    const root = document.querySelector('svg.avatar');
     const le = document.getElementById('left-eye');
     const re = document.getElementById('right-eye');
     let mo = document.getElementById('mouth');
 
-    if (!le || !re || !mo) return;
+    if (!root || !le || !re || !mo) return;
+
+    const timeouts = new Set();
+
+    const schedule = (callback, delay) => {
+      const timeoutId = window.setTimeout(() => {
+        timeouts.delete(timeoutId);
+        callback();
+      }, delay);
+
+      timeouts.add(timeoutId);
+      return timeoutId;
+    };
 
     function blink() {
       le.setAttribute('d', 'M18 32 Q22 33 26 32');
       re.setAttribute('d', 'M38 32 Q42 33 46 32');
-      setTimeout(() => {
+      schedule(() => {
         le.setAttribute('d', 'M18 32 Q22 28 26 32');
         re.setAttribute('d', 'M38 32 Q42 28 46 32');
       }, 150);
@@ -43,7 +72,7 @@ const { class: className } = Astro.props;
       p.setAttribute('id', 'mouth');
       mo.replaceWith(p);
       mo = p;
-      setTimeout(() => {
+      schedule(() => {
         const l = document.createElementNS('http://www.w3.org/2000/svg', 'line');
         l.setAttribute('x1', '28');
         l.setAttribute('y1', '46');
@@ -58,15 +87,17 @@ const { class: className } = Astro.props;
       }, 800);
     }
 
-    (function loop() {
+    function blinkLoop() {
       blink();
-      setTimeout(loop, 2000 + Math.random() * 4000);
-    })();
+      schedule(blinkLoop, 2000 + Math.random() * 4000);
+    }
+    schedule(blinkLoop, 0);
 
-    setTimeout(function smileLoop() {
+    function smileLoop() {
       smile();
-      setTimeout(smileLoop, 6000 + Math.random() * 8000);
-    }, 3000 + Math.random() * 4000);
+      schedule(smileLoop, 6000 + Math.random() * 8000);
+    }
+    schedule(smileLoop, 3000 + Math.random() * 4000);
 
     const hairBase = document.getElementById('hair-base');
     const hairTop = document.getElementById('hair-top');
@@ -95,11 +126,25 @@ const { class: className } = Astro.props;
         ], { duration: 700, easing: 'ease-in-out' });
       }
 
-      setTimeout(function surpriseLoop() {
+      function surpriseLoop() {
         hairSurprise();
-        setTimeout(surpriseLoop, 5000 + Math.random() * 7000);
-      }, 2000 + Math.random() * 3000);
+        schedule(surpriseLoop, 5000 + Math.random() * 7000);
+      }
+      schedule(surpriseLoop, 2000 + Math.random() * 3000);
     }
+
+    const cleanup = () => {
+      timeouts.forEach((timeoutId) => clearTimeout(timeoutId));
+      timeouts.clear();
+
+      if (window[AVATAR_STATE_KEY]?.root === root) {
+        delete window[AVATAR_STATE_KEY];
+      }
+    };
+
+    window[AVATAR_STATE_KEY] = { root, timeouts, cleanup };
+    document.addEventListener('astro:before-swap', cleanup, { once: true });
+    window.addEventListener('pagehide', cleanup, { once: true });
   }
 
   initAvatar();
