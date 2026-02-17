@@ -13,7 +13,10 @@ const photoModules = import.meta.glob<{ default: ImageMetadata }>(
 	{ eager: true },
 );
 
-const allImages = Object.values(photoModules).map((m) => m.default);
+const allEntries = Object.entries(photoModules).map(([path, m]) => ({
+	meta: m.default,
+	filename: path.split("/").pop() ?? "",
+}));
 
 const stableHash = (value: string): number => {
 	let hash = 2166136261;
@@ -33,9 +36,9 @@ const formatImageName = (src: string): string => {
 		.trim();
 };
 
-const galleryImages = [...allImages].sort((a, b) => {
-	const diff = stableHash(a.src) - stableHash(b.src);
-	return diff !== 0 ? diff : a.src.localeCompare(b.src);
+const galleryEntries = [...allEntries].sort((a, b) => {
+	const diff = stableHash(a.filename) - stableHash(b.filename);
+	return diff !== 0 ? diff : a.filename.localeCompare(b.filename);
 });
 
 const HERO_SLOT_DURATION = 6; // seconds per image
@@ -54,11 +57,10 @@ const heroImageFiles = [
 ];
 
 const heroImages = heroImageFiles
-	.map((name) =>
-		allImages.find(
-			(img) => img.src.includes(`/${name}`) || img.src.endsWith(name),
-		),
-	)
+	.map((name) => {
+		const entry = allEntries.find((e) => e.filename === name);
+		return entry?.meta;
+	})
 	.filter((img): img is ImageMetadata => img !== undefined);
 
 const HERO_OVERLAP = 4.5; // crossfade overlap in seconds
@@ -126,12 +128,12 @@ const heroDelayCSS = heroImages
 			</div>
 
 				<div class="gallery">
-					{galleryImages.map((img, i) => {
-						const altText = `Live event photo ${String(i + 1).padStart(2, "0")}: ${formatImageName(img.src)}`;
+					{galleryEntries.map((entry, i) => {
+						const altText = `Live event photo ${String(i + 1).padStart(2, "0")}: ${formatImageName(entry.filename)}`;
 
 						return (
 							<div class="shot">
-								<Image src={img} alt={altText} width={900} height={600} loading={i < 6 ? "eager" : "lazy"} />
+								<Image src={entry.meta} alt={altText} width={900} height={Math.round(900 * (entry.meta.height / entry.meta.width))} loading={i < 6 ? "eager" : "lazy"} />
 								<div class="shot-num">{String(i + 1).padStart(2, "0")}</div>
 							</div>
 						);
