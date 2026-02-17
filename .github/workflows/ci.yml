@@ -35,6 +35,8 @@ jobs:
             dist_path: gemini/dist
     steps:
       - uses: actions/checkout@v4
+        with:
+          lfs: true
       - uses: oven-sh/setup-bun@v2
         if: matrix.site == 'rotman.dev'
       - run: bun install --frozen-lockfile
