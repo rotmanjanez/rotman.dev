@@ -1,46 +1,38 @@
 ---
-const url = Astro.url.pathname;
-const method = Astro.request.method;
-const referer = Astro.request.headers.get("referer") || "(none)";
-const host = Astro.url.host;
-const protocol = Astro.url.protocol.replace(":", "");
+import Base from "../layouts/Base.astro";
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/avatar.svg" />
-		<link rel="apple-touch-icon" href="/avatar.svg" />
-		<meta name="viewport" content="width=device-width" />
+<Base title="404 - Janez Rotman">
+	<Fragment slot="head">
 		<meta name="color-scheme" content="light dark" />
-		<title>404 - Janez Rotman</title>
 		<style is:global>
 			@import '../styles/global.css';
 		</style>
-	</head>
-	<body>
+	</Fragment>
 		<div class="container">
-			<pre class="stacktrace"><code id="trace">{`${host}: ${url}: Assertion \`status == 200\` failed.
-${host}: ${method} ${protocol.toUpperCase()}/1.1 ${url}: 404 Not Found
-${host}: referer: ${referer}
-`}</code></pre>
-			<a href="/">back to safety</a>
+			<pre class="stacktrace"><code id="trace">Collecting request details...</code></pre>
+					<a href="/">back to safety</a>
 		</div>
 
 		<script>
 			const el = document.getElementById("trace");
 			if (el) {
+				const { host, pathname, search, protocol } = window.location;
+				const url = `${pathname}${search}`;
+				const referer = document.referrer || "(none)";
 				const dark = window.matchMedia("(prefers-color-scheme: dark)").matches;
 				const lines = [
+					`${host}: ${url}: Assertion \`status == 200\` failed.`,
+					`${host}: GET ${protocol.replace(":", "").toUpperCase()}/1.1 ${url}: 404 Not Found`,
+					`${host}: referer: ${referer}`,
 					"  ua: " + navigator.userAgent,
 					"  viewport: " + window.innerWidth + "x" + window.innerHeight + ", screen: " + screen.width + "x" + screen.height + "@" + devicePixelRatio + "x",
 					"  scheme: " + (dark ? "dark" : "light") + ", lang: " + navigator.language,
 				];
-				el.textContent += lines.join("\n") + "\n";
+				el.textContent = lines.join("\n") + "\n";
 			}
 		</script>
-	</body>
-</html>
+</Base>
 
 <style>
 	body {

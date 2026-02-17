@@ -1,8 +1,12 @@
 ---
-// Photography portfolio -- "The Stage"
-// Brutalist type, high-contrast, full-bleed hero with background image.
+import "@fontsource/azeret-mono/300.css";
+import "@fontsource/azeret-mono/400.css";
+import "@fontsource/bebas-neue";
 import { Image } from "astro:assets";
 import type { ImageMetadata } from "astro";
+// Photography portfolio -- "The Stage"
+// Brutalist type, high-contrast, full-bleed hero with background image.
+import Base from "../layouts/Base.astro";
 
 const photoModules = import.meta.glob<{ default: ImageMetadata }>(
 	"../assets/photos/*.{jpg,jpeg,JPG,JPEG,png,PNG,webp,WEBP}",
@@ -10,7 +14,29 @@ const photoModules = import.meta.glob<{ default: ImageMetadata }>(
 );
 
 const allImages = Object.values(photoModules).map((m) => m.default);
-const galleryImages = [...allImages].sort(() => Math.random() - 0.5);
+
+const stableHash = (value: string): number => {
+	let hash = 2166136261;
+	for (let i = 0; i < value.length; i++) {
+		hash ^= value.charCodeAt(i);
+		hash = Math.imul(hash, 16777619);
+	}
+	return hash >>> 0;
+};
+
+const formatImageName = (src: string): string => {
+	const fileName = src.split("/").pop() ?? src;
+	return fileName
+		.replace(/\.[^.]+$/, "")
+		.replace(/[._-]+/g, " ")
+		.replace(/\s+/g, " ")
+		.trim();
+};
+
+const galleryImages = [...allImages].sort((a, b) => {
+	const diff = stableHash(a.src) - stableHash(b.src);
+	return diff !== 0 ? diff : a.src.localeCompare(b.src);
+});
 
 const HERO_SLOT_DURATION = 6; // seconds per image
 
@@ -53,15 +79,8 @@ const heroDelayCSS = heroImages
 	.join("\n\t");
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/avatar.svg" />
-		<meta name="viewport" content="width=device-width" />
-		<title>Janez Rotman / Photo</title>
-		<link rel="preconnect" href="https://fonts.googleapis.com" />
-		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-		<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Azeret+Mono:wght@300;400&display=swap" rel="stylesheet" />
+<Base title="Janez Rotman / Photo">
+	<Fragment slot="head">
 		<style set:html={`
 			.hero-bg img, .vivid-layer img { animation-duration: ${heroDuration}s; animation-timing-function: linear; }
 			@keyframes heroFade {
@@ -73,8 +92,7 @@ const heroDelayCSS = heroImages
 			}
 			${heroDelayCSS}
 		`} />
-	</head>
-	<body>
+	</Fragment>
 
 		<nav class="hud">
 			<a href="/" class="hud-name">Janez Rotman</a>
@@ -107,14 +125,18 @@ const heroDelayCSS = heroImages
 				</div>
 			</div>
 
-			<div class="gallery">
-				{galleryImages.map((img, i) => (
-					<div class="shot">
-						<Image src={img} alt="" width={900} height={600} loading={i < 6 ? "eager" : "lazy"} />
-						<div class="shot-num">{String(i + 1).padStart(2, "0")}</div>
-					</div>
-				))}
-			</div>
+				<div class="gallery">
+					{galleryImages.map((img, i) => {
+						const altText = `Live event photo ${String(i + 1).padStart(2, "0")}: ${formatImageName(img.src)}`;
+
+						return (
+							<div class="shot">
+								<Image src={img} alt={altText} width={900} height={600} loading={i < 6 ? "eager" : "lazy"} />
+								<div class="shot-num">{String(i + 1).padStart(2, "0")}</div>
+							</div>
+						);
+					})}
+				</div>
 		</div>
 
 		<footer class="foot">
@@ -131,8 +153,7 @@ const heroDelayCSS = heroImages
 			</div>
 		</footer>
 
-	</body>
-</html>
+</Base>
 
 <style>
 	* { margin: 0; padding: 0; box-sizing: border-box; }

@@ -12,6 +12,8 @@
 		"postinstall": "lefthook install"
 	},
 	"dependencies": {
+		"@fontsource/azeret-mono": "^5.2.11",
+		"@fontsource/bebas-neue": "^5.2.7",
 		"astro": "^5.17.1",
 		"sharp": "^0.34.5"
 	},

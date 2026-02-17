@@ -1,21 +1,16 @@
 ---
 import Avatar from "../components/Avatar.astro";
+import Base from "../layouts/Base.astro";
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/avatar.svg" />
-		<link rel="apple-touch-icon" href="/avatar.svg" />
-		<meta name="viewport" content="width=device-width" />
+<Base title="Janez Rotman">
+	<Fragment slot="head">
 		<meta name="generator" content={Astro.generator} />
 		<meta name="color-scheme" content="light dark" />
-		<title>Janez Rotman</title>
 		<style is:global>
 			@import '../styles/global.css';
 		</style>
-	</head>
-	<body>
+	</Fragment>
 		<header>
 			<Avatar />
 			<div class="header-text">
@@ -79,8 +74,7 @@ import Avatar from "../components/Avatar.astro";
 		<footer>
 			(c) 2026 Janez Rotman
 		</footer>
-	</body>
-</html>
+</Base>
 
 <style>
 	body {
