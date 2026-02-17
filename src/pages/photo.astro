@@ -1,0 +1,486 @@
+---
+// Photography portfolio -- "The Stage"
+// Brutalist type, high-contrast, full-bleed hero with background image.
+import { Image } from "astro:assets";
+import type { ImageMetadata } from "astro";
+
+const photoModules = import.meta.glob<{ default: ImageMetadata }>(
+	"../assets/photos/*.{jpg,jpeg,JPG,JPEG,png,PNG,webp,WEBP}",
+	{ eager: true },
+);
+
+const allImages = Object.values(photoModules).map((m) => m.default);
+const galleryImages = [...allImages].sort(() => Math.random() - 0.5);
+
+const HERO_SLOT_DURATION = 6; // seconds per image
+
+const heroImageFiles = [
+	"CFU-22.03.2025-1.jpg",
+	"0623-GarnixOpenAir-Bands-90.jpg",
+	"Luxuspop-22.11.2024-42.jpg",
+	"0623-GarnixOpenAir-Bands-93.jpg",
+	"Dailysoap-64.jpg",
+	"LMU-Sommerfest-15.jpg",
+	"TheFinalShow-10.jpg",
+	"GARNIX-2022-22-Days-16.JPG",
+	"Die-CSD-Party-NY.Club-28.06.2025-105.jpg",
+	"SHRX-NEON-MUSIC-FESTIVAL-79.jpg",
+];
+
+const heroImages = heroImageFiles
+	.map((name) =>
+		allImages.find(
+			(img) => img.src.includes(`/${name}`) || img.src.endsWith(name),
+		),
+	)
+	.filter((img): img is ImageMetadata => img !== undefined);
+
+const HERO_OVERLAP = 4.5; // crossfade overlap in seconds
+const heroDuration = heroImages.length * HERO_SLOT_DURATION;
+const heroVisPct = (
+	((HERO_SLOT_DURATION - HERO_OVERLAP) / heroDuration) *
+	100
+).toFixed(2);
+const heroCrossfadeEndPct = (
+	((HERO_SLOT_DURATION + HERO_OVERLAP) / heroDuration) *
+	100
+).toFixed(2);
+const heroDelayCSS = heroImages
+	.map((_, i) => {
+		const delay = i * HERO_SLOT_DURATION;
+		return `.vivid-layer img:nth-child(${i + 1}), .hero-bg img:nth-child(${i + 1}) { animation-delay: ${delay}s; }`;
+	})
+	.join("\n\t");
+---
+
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<link rel="icon" type="image/svg+xml" href="/avatar.svg" />
+		<meta name="viewport" content="width=device-width" />
+		<title>Janez Rotman / Photo</title>
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Azeret+Mono:wght@300;400&display=swap" rel="stylesheet" />
+		<style set:html={`
+			.hero-bg img, .vivid-layer img { animation-duration: ${heroDuration}s; animation-timing-function: linear; }
+			@keyframes heroFade {
+				0%                    { opacity: 0; }
+				1%                    { opacity: 1; }
+				${heroVisPct}%        { opacity: 1; }
+				${heroCrossfadeEndPct}% { opacity: 0; }
+				100%                  { opacity: 0; }
+			}
+			${heroDelayCSS}
+		`} />
+	</head>
+	<body>
+
+		<nav class="hud">
+			<a href="/" class="hud-name">Janez Rotman</a>
+			<div class="hud-right">
+				<a href="mailto:janez@janez.at" class="hud-email">janez@janez.at</a>
+			</div>
+		</nav>
+
+		<div class="stage">
+			<div class="stage-title">
+				<div class="hero-bg">
+					{heroImages.map((img, i) => (
+						<Image src={img} alt="" width={1920} height={1280} loading={i === 0 ? "eager" : "lazy"} />
+					))}
+				</div>
+				<div class="hero-overlay"></div>
+				<div class="vivid-layer">
+					{heroImages.map((img, i) => (
+						<Image src={img} alt="" width={1920} height={1280} loading={i === 0 ? "eager" : "lazy"} />
+					))}
+				</div>
+				<h1 class="title-text">Photo</h1>
+				<div class="scroll-cue">
+					<span class="scroll-cue-text">Scroll</span>
+					<div class="scroll-cue-arrow">
+						<svg width="14" height="24" viewBox="0 0 14 24" fill="none">
+							<path d="M7 0 L7 20 M1 15 L7 22 L13 15" stroke="currentColor" stroke-width="1.5" />
+						</svg>
+					</div>
+				</div>
+			</div>
+
+			<div class="gallery">
+				{galleryImages.map((img, i) => (
+					<div class="shot">
+						<Image src={img} alt="" width={900} height={600} loading={i < 6 ? "eager" : "lazy"} />
+						<div class="shot-num">{String(i + 1).padStart(2, "0")}</div>
+					</div>
+				))}
+			</div>
+		</div>
+
+		<footer class="foot">
+			<div class="foot-left">
+				<span class="foot-copy">(c) 2026</span>
+				<span class="foot-loc">Munich</span>
+			</div>
+			<div class="foot-right">
+				<span>Events</span>
+				<span class="foot-dot"></span>
+				<span>Bands</span>
+				<span class="foot-dot"></span>
+				<span>Live</span>
+			</div>
+		</footer>
+
+	</body>
+</html>
+
+<style>
+	* { margin: 0; padding: 0; box-sizing: border-box; }
+
+	body {
+		background: #050505;
+		color: #888;
+		font-family: "Azeret Mono", monospace;
+		font-size: 11px;
+		font-weight: 300;
+		letter-spacing: 0.04em;
+		min-height: 100vh;
+	}
+
+	/* Red accent glow at top */
+	body::before {
+		content: "";
+		position: fixed;
+		top: -200px;
+		left: 50%;
+		transform: translateX(-50%);
+		width: 600px;
+		height: 400px;
+		background: radial-gradient(ellipse, rgba(200, 30, 20, 0.06) 0%, transparent 70%);
+		pointer-events: none;
+		z-index: 0;
+	}
+
+	/* ---- HUD ---- */
+	.hud {
+		position: fixed;
+		top: 0;
+		left: 0;
+		right: 0;
+		z-index: 100;
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: 20px 28px;
+		background: linear-gradient(to bottom, rgba(5,5,5,0.9) 40%, transparent);
+	}
+
+	.hud-name {
+		color: #e8e4de;
+		text-decoration: none;
+		text-transform: uppercase;
+		font-weight: 400;
+		font-size: 10px;
+		letter-spacing: 0.18em;
+		transition: color 0.3s;
+	}
+
+	.hud-name:hover { color: #fff; text-decoration: none; }
+
+	.hud-right {
+		display: flex;
+		align-items: center;
+		gap: 20px;
+	}
+
+	.hud-email {
+		color: #444;
+		text-decoration: none;
+		text-transform: uppercase;
+		font-size: 10px;
+		letter-spacing: 0.12em;
+		transition: color 0.3s;
+	}
+
+	.hud-email:hover { color: #aaa; text-decoration: none; }
+
+	/* ---- Stage ---- */
+	.stage {
+		padding: 0 0 80px;
+	}
+
+	.stage-title {
+		height: 100vh;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		position: relative;
+		overflow: hidden;
+	}
+
+	.hero-bg {
+		position: absolute;
+		inset: 0;
+		z-index: 0;
+	}
+
+	.hero-bg img {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		filter: contrast(1.2) saturate(0.4) brightness(0.9);
+		opacity: 0;
+		animation-name: heroFade;
+		animation-timing-function: linear;
+		animation-iteration-count: infinite;
+	}
+
+	.vivid-layer {
+		position: absolute;
+		inset: 0;
+		z-index: 3;
+		overflow: hidden;
+		-webkit-mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='100%' height='100%'><text font-family='Bebas Neue,Impact,sans-serif' font-size='22vw' fill='white' x='50%' y='55%' text-anchor='middle' dominant-baseline='middle'>Photo</text></svg>");
+		-webkit-mask-repeat: no-repeat;
+		-webkit-mask-size: 100% 100%;
+		mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='100%' height='100%'><text font-family='Bebas Neue,Impact,sans-serif' font-size='22vw' fill='white' x='50%' y='55%' text-anchor='middle' dominant-baseline='middle'>Photo</text></svg>");
+		mask-repeat: no-repeat;
+		mask-size: 100% 100%;
+	}
+
+	.vivid-layer img {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		filter: contrast(1.05) saturate(0.5) brightness(1.4);
+		opacity: 0;
+		animation-name: heroFade;
+		animation-timing-function: linear;
+		animation-iteration-count: infinite;
+	}
+
+	.hero-overlay {
+		position: absolute;
+		inset: 0;
+		background:
+			radial-gradient(ellipse at center, rgba(5,5,5,0.1) 0%, rgba(5,5,5,0.5) 100%),
+			linear-gradient(to bottom, transparent 60%, #050505 100%);
+		z-index: 1;
+	}
+
+	.title-text {
+		position: relative;
+		z-index: 4;
+		font-family: 'Bebas Neue', Impact, sans-serif;
+		font-size: clamp(120px, 22vw, 320px);
+		color: transparent;
+		line-height: 1;
+		letter-spacing: 0.02em;
+		opacity: 0;
+		animation: titleIn 1.2s cubic-bezier(0.22, 1, 0.36, 1) 0.3s forwards;
+	}
+
+	@keyframes titleIn {
+		from {
+			opacity: 0;
+			transform: translateY(40px) scaleY(1.1);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0) scaleY(1);
+		}
+	}
+
+	/* ---- Scroll cue ---- */
+	.scroll-cue {
+		position: absolute;
+		bottom: 40px;
+		left: 50%;
+		transform: translateX(-50%);
+		z-index: 10;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 10px;
+		opacity: 0;
+		animation: cueIn 0.6s ease 1.2s forwards;
+		transition: opacity 0.5s;
+	}
+
+	.scroll-cue.hidden {
+		opacity: 0 !important;
+		pointer-events: none;
+	}
+
+	.scroll-cue-text {
+		font-size: 9px;
+		text-transform: uppercase;
+		letter-spacing: 0.2em;
+		color: #999;
+	}
+
+	.scroll-cue-arrow {
+		color: #c8281e;
+		animation: bounce 2s ease-in-out infinite;
+	}
+
+	@keyframes cueIn {
+		to { opacity: 1; }
+	}
+
+	@keyframes bounce {
+		0%, 100% { transform: translateY(0); }
+		50% { transform: translateY(6px); }
+	}
+
+	/* ---- Gallery ---- */
+	.gallery {
+		max-width: 1400px;
+		margin: 0 auto;
+		padding: 0 28px;
+		columns: 4;
+		column-gap: 6px;
+	}
+
+	.shot {
+		position: relative;
+		overflow: hidden;
+		cursor: pointer;
+		opacity: 0;
+		transform: translateY(30px);
+		break-inside: avoid;
+		margin-bottom: 6px;
+	}
+
+	.shot img {
+		width: 100%;
+		height: auto;
+		display: block;
+		filter: contrast(1.15) saturate(0.6) brightness(0.88);
+		transition: filter 0.6s ease, transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+	}
+
+	.shot:hover img {
+		filter: contrast(1.1) saturate(0.9) brightness(1);
+		transform: scale(1.04);
+	}
+
+	.shot-num {
+		position: absolute;
+		bottom: 10px;
+		right: 12px;
+		font-size: 9px;
+		color: rgba(255, 255, 255, 0.25);
+		letter-spacing: 0.1em;
+		font-weight: 400;
+		z-index: 2;
+		transition: color 0.3s;
+	}
+
+	.shot:hover .shot-num {
+		color: rgba(255, 255, 255, 0.5);
+	}
+
+	/* Overlay gradient on each shot */
+	.shot::after {
+		content: "";
+		position: absolute;
+		inset: 0;
+		background: linear-gradient(to top, rgba(5,5,5,0.3) 0%, transparent 40%);
+		pointer-events: none;
+	}
+
+	/* ---- Footer ---- */
+	.foot {
+		max-width: 1400px;
+		margin: 80px auto 0;
+		padding: 20px 28px 32px;
+		border-top: 1px solid #151515;
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		text-transform: uppercase;
+		letter-spacing: 0.12em;
+		font-size: 10px;
+	}
+
+	.foot-left {
+		display: flex;
+		gap: 20px;
+		color: #333;
+	}
+
+	.foot-right {
+		display: flex;
+		align-items: center;
+		gap: 12px;
+		color: #444;
+	}
+
+	.foot-dot {
+		width: 3px;
+		height: 3px;
+		border-radius: 50%;
+		background: #c8281e;
+	}
+
+	/* ---- Responsive ---- */
+	@media (max-width: 1100px) {
+		.gallery {
+			columns: 3;
+		}
+	}
+
+	@media (max-width: 700px) {
+.gallery {
+			columns: 2;
+			padding: 0 12px;
+		}
+
+		.shot {
+			margin-bottom: 4px;
+		}
+
+		.foot {
+			flex-direction: column;
+			gap: 12px;
+			align-items: flex-start;
+			padding: 20px 12px 28px;
+		}
+	}
+</style>
+
+<script>
+	const shots = document.querySelectorAll(".shot");
+	const scrollCue = document.querySelector(".scroll-cue");
+
+	const observer = new IntersectionObserver(
+		(entries) => {
+			entries.forEach((entry) => {
+				if (entry.isIntersecting) {
+					const el = entry.target as HTMLElement;
+					el.style.transition = "opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1), transform 0.8s cubic-bezier(0.22, 1, 0.36, 1)";
+					el.style.opacity = "1";
+					el.style.transform = "translateY(0)";
+					observer.unobserve(el);
+				}
+			});
+		},
+		{ threshold: 0.1, rootMargin: "0px 0px -60px 0px" }
+	);
+
+	shots.forEach((shot) => observer.observe(shot));
+
+	// Hide scroll cue after scrolling past hero
+	let cueHidden = false;
+	window.addEventListener("scroll", () => {
+		if (!cueHidden && window.scrollY > 100) {
+			cueHidden = true;
+			scrollCue?.classList.add("hidden");
+		}
+	});
+</script>
