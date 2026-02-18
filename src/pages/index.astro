@@ -1,6 +1,8 @@
 ---
 import Avatar from "../components/Avatar.astro";
 import Base from "../layouts/Base.astro";
+
+const year = new Date().getFullYear();
 ---
 
 <Base title="Janez Rotman">
@@ -72,7 +74,7 @@ import Base from "../layouts/Base.astro";
 		</main>
 
 		<footer>
-			(c) 2026 Janez Rotman
+			&copy; {year} Janez Rotman
 		</footer>
 </Base>
 
