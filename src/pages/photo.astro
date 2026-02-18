@@ -2,7 +2,7 @@
 import "@fontsource/azeret-mono/300.css";
 import "@fontsource/azeret-mono/400.css";
 import "@fontsource/bebas-neue";
-import { Image } from "astro:assets";
+import { getImage, Image } from "astro:assets";
 import type { ImageMetadata } from "astro";
 // Photography portfolio -- "The Stage"
 // Brutalist type, high-contrast, full-bleed hero with background image.
@@ -43,6 +43,13 @@ const galleryEntries = [...allEntries].sort((a, b) => {
 	return diff !== 0 ? diff : a.filename.localeCompare(b.filename);
 });
 
+// Pre-generate full-res images for the lightbox
+const fullResImages = await Promise.all(
+	galleryEntries.map((entry) =>
+		getImage({ src: entry.meta, width: 1920, format: "webp" }),
+	),
+);
+
 const HERO_SLOT_DURATION = 6; // seconds per image
 
 const heroImageFiles = [
@@ -64,46 +71,17 @@ const heroImages = heroImageFiles
 		return entry?.meta;
 	})
 	.filter((img): img is ImageMetadata => img !== undefined);
-
-const HERO_OVERLAP = 4.5; // crossfade overlap in seconds
-const heroDuration = heroImages.length * HERO_SLOT_DURATION;
-const heroVisPct = (
-	((HERO_SLOT_DURATION - HERO_OVERLAP) / heroDuration) *
-	100
-).toFixed(2);
-const heroCrossfadeEndPct = (
-	((HERO_SLOT_DURATION + HERO_OVERLAP) / heroDuration) *
-	100
-).toFixed(2);
-const heroDelayCSS = heroImages
-	.map((_, i) => {
-		const delay = i * HERO_SLOT_DURATION;
-		return `.vivid-layer img:nth-child(${i + 1}), .hero-bg img:nth-child(${i + 1}) { animation-delay: ${delay}s; }`;
-	})
-	.join("\n\t");
 ---
 
 <Base title="Janez Rotman / Photo">
-	<Fragment slot="head">
-		<style set:html={`
-			.hero-bg img, .vivid-layer img { animation-duration: ${heroDuration}s; animation-timing-function: linear; }
-			@keyframes heroFade {
-				0%                    { opacity: 0; }
-				1%                    { opacity: 1; }
-				${heroVisPct}%        { opacity: 1; }
-				${heroCrossfadeEndPct}% { opacity: 0; }
-				100%                  { opacity: 0; }
-			}
-			${heroDelayCSS}
-		`} />
-	</Fragment>
 
 		<div class="progress-bar" aria-hidden="true"></div>
 
 		<nav class="hud">
 			<a href="/" class="hud-name">Janez Rotman</a>
 			<div class="hud-right">
-				<a href="mailto:janez@janez.at" class="hud-email">janez@janez.at</a>
+				<a href="mailto:janez@janez.at" class="hud-link">janez@janez.at</a>
+				<a href="/" class="hud-link">Home</a>
 			</div>
 		</nav>
 
@@ -111,16 +89,28 @@ const heroDelayCSS = heroImages
 			<div class="stage-title">
 				<div class="hero-bg">
 					{heroImages.map((img, i) => (
-						<Image src={img} alt="" width={1920} height={1280} loading={i === 0 ? "eager" : "lazy"} />
+						<Image src={img} alt="" width={1920} height={1280} loading={i === 0 ? "eager" : "lazy"} class={i === 0 ? "active" : ""} />
 					))}
 				</div>
 				<div class="hero-overlay"></div>
 				<div class="vivid-layer">
 					{heroImages.map((img, i) => (
-						<Image src={img} alt="" width={1920} height={1280} loading={i === 0 ? "eager" : "lazy"} />
+						<Image src={img} alt="" width={1920} height={1280} loading={i === 0 ? "eager" : "lazy"} class={i === 0 ? "active" : ""} />
 					))}
 				</div>
 				<h1 class="title-text">Photo</h1>
+				<div class="hero-controls" id="hero-controls">
+					<button class="hero-btn" id="hero-prev" aria-label="Previous image">
+						<svg width="10" height="16" viewBox="0 0 10 16" fill="none"><path d="M8 2 L2 8 L8 14" stroke="currentColor" stroke-width="1.2" /></svg>
+					</button>
+					<button class="hero-btn" id="hero-pause" aria-label="Pause slideshow">
+						<svg class="icon-pause" width="10" height="12" viewBox="0 0 10 12" fill="none"><rect x="1" y="1" width="2.5" height="10" fill="currentColor" /><rect x="6.5" y="1" width="2.5" height="10" fill="currentColor" /></svg>
+						<svg class="icon-play" width="10" height="12" viewBox="0 0 10 12" fill="none" style="display:none"><path d="M1 1 L9 6 L1 11Z" fill="currentColor" /></svg>
+					</button>
+					<button class="hero-btn" id="hero-next" aria-label="Next image">
+						<svg width="10" height="16" viewBox="0 0 10 16" fill="none"><path d="M2 2 L8 8 L2 14" stroke="currentColor" stroke-width="1.2" /></svg>
+					</button>
+				</div>
 				<div class="scroll-cue">
 					<span class="scroll-cue-text">Scroll</span>
 					<div class="scroll-cue-arrow">
@@ -134,16 +124,35 @@ const heroDelayCSS = heroImages
 				<div class="gallery">
 					{galleryEntries.map((entry, i) => {
 						const altText = `Live event photo ${String(i + 1).padStart(2, "0")}: ${formatImageName(entry.filename)}`;
+						const num = String(i + 1).padStart(2, "0");
 
 						return (
-							<div class="shot">
+							<a href={`#photo-${i}`} class="shot" data-index={i}>
 								<Image src={entry.meta} alt={altText} width={900} height={Math.round(900 * (entry.meta.height / entry.meta.width))} loading={i < 6 ? "eager" : "lazy"} />
-								<div class="shot-num">{String(i + 1).padStart(2, "0")}</div>
-							</div>
+								<div class="shot-num">{num}</div>
+							</a>
 						);
 					})}
 				</div>
 		</div>
+
+		{galleryEntries.map((entry, i) => {
+			const altText = `Live event photo ${String(i + 1).padStart(2, "0")}: ${formatImageName(entry.filename)}`;
+			const prev = i > 0 ? `#photo-${i - 1}` : null;
+			const next = i < galleryEntries.length - 1 ? `#photo-${i + 1}` : null;
+
+			return (
+				<div class="lightbox" id={`photo-${i}`} data-index={i}>
+					<a href="#" class="lightbox-bg" aria-label="Close"></a>
+					<div class="lightbox-inner">
+						{prev && <a href={prev} class="lightbox-nav lightbox-prev" aria-label="Previous">&lsaquo;</a>}
+						<img src={fullResImages[i].src} alt={altText} class="lightbox-img" loading="lazy" />
+						{next && <a href={next} class="lightbox-nav lightbox-next" aria-label="Next">&rsaquo;</a>}
+					</div>
+					<a href="#" class="lightbox-close" aria-label="Close">&times;</a>
+				</div>
+			);
+		})}
 
 		<footer class="foot">
 			<div class="foot-left">
@@ -233,8 +242,8 @@ const heroDelayCSS = heroImages
 		gap: 20px;
 	}
 
-	.hud-email {
-		color: #444;
+	.hud-link {
+		color: #888;
 		text-decoration: none;
 		text-transform: uppercase;
 		font-size: 10px;
@@ -242,7 +251,7 @@ const heroDelayCSS = heroImages
 		transition: color 0.3s;
 	}
 
-	.hud-email:hover { color: #aaa; text-decoration: none; }
+	.hud-link:hover { color: #ccc; text-decoration: none; }
 
 	/* ---- Stage ---- */
 	.stage {
@@ -272,9 +281,11 @@ const heroDelayCSS = heroImages
 		object-fit: cover;
 		filter: contrast(1.2) saturate(0.4) brightness(0.9);
 		opacity: 0;
-		animation-name: heroFade;
-		animation-timing-function: linear;
-		animation-iteration-count: infinite;
+		transition: opacity 1s ease;
+	}
+
+	.hero-bg img:global(.active) {
+		opacity: 1;
 	}
 
 	.vivid-layer {
@@ -298,9 +309,11 @@ const heroDelayCSS = heroImages
 		object-fit: cover;
 		filter: contrast(1.05) saturate(0.5) brightness(1.4);
 		opacity: 0;
-		animation-name: heroFade;
-		animation-timing-function: linear;
-		animation-iteration-count: infinite;
+		transition: opacity 1s ease;
+	}
+
+	.vivid-layer img:global(.active) {
+		opacity: 1;
 	}
 
 	.hero-overlay {
@@ -335,6 +348,32 @@ const heroDelayCSS = heroImages
 		}
 	}
 
+	/* ---- Hero controls ---- */
+	.hero-controls {
+		position: absolute;
+		bottom: 28px;
+		right: 28px;
+		z-index: 10;
+		display: flex;
+		align-items: center;
+		gap: 16px;
+		opacity: 0;
+		animation: cueIn 0.6s ease 1.2s forwards;
+	}
+
+	.hero-btn {
+		background: none;
+		border: none;
+		color: rgba(255, 255, 255, 0.3);
+		padding: 4px;
+		cursor: pointer;
+		transition: color 0.4s ease;
+	}
+
+	.hero-btn:hover {
+		color: rgba(255, 255, 255, 0.85);
+	}
+
 	/* ---- Scroll cue ---- */
 	.scroll-cue {
 		position: absolute;
@@ -351,7 +390,7 @@ const heroDelayCSS = heroImages
 		transition: opacity 0.5s;
 	}
 
-	.scroll-cue.hidden {
+	.scroll-cue:global(.hidden) {
 		opacity: 0 !important;
 		pointer-events: none;
 	}
@@ -388,12 +427,14 @@ const heroDelayCSS = heroImages
 
 	.shot {
 		position: relative;
+		display: block;
 		overflow: hidden;
 		cursor: pointer;
 		opacity: 0;
 		transform: translateY(30px);
 		break-inside: avoid;
 		margin-bottom: 6px;
+		text-decoration: none;
 	}
 
 	.shot img {
@@ -468,6 +509,80 @@ const heroDelayCSS = heroImages
 		background: #c8281e;
 	}
 
+	/* ---- Lightbox (CSS :target driven) ---- */
+	.lightbox {
+		position: fixed;
+		inset: 0;
+		z-index: 300;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		opacity: 0;
+		pointer-events: none;
+		transition: opacity 0.3s ease;
+	}
+
+	.lightbox:target {
+		opacity: 1;
+		pointer-events: auto;
+	}
+
+	.lightbox-bg {
+		position: absolute;
+		inset: 0;
+		background: rgba(5, 5, 5, 0.96);
+		cursor: zoom-out;
+	}
+
+	.lightbox-inner {
+		position: relative;
+		z-index: 1;
+		display: flex;
+		align-items: center;
+		gap: 16px;
+		max-width: 94vw;
+		max-height: 92vh;
+	}
+
+	.lightbox-img {
+		max-width: 85vw;
+		max-height: 90vh;
+		object-fit: contain;
+		border-radius: 2px;
+	}
+
+	.lightbox-nav {
+		color: #666;
+		font-size: 48px;
+		text-decoration: none;
+		line-height: 1;
+		padding: 20px 8px;
+		transition: color 0.2s;
+		user-select: none;
+	}
+
+	.lightbox-nav:hover {
+		color: #fff;
+		text-decoration: none;
+	}
+
+	.lightbox-close {
+		position: absolute;
+		top: 20px;
+		right: 28px;
+		z-index: 2;
+		color: #888;
+		font-size: 32px;
+		text-decoration: none;
+		line-height: 1;
+		transition: color 0.3s;
+	}
+
+	.lightbox-close:hover {
+		color: #fff;
+		text-decoration: none;
+	}
+
 	/* ---- Responsive ---- */
 	@media (max-width: 1100px) {
 		.gallery {
@@ -506,6 +621,59 @@ const heroDelayCSS = heroImages
 		});
 	}
 
+	// ---- Hero slideshow ----
+	const bgImgs = document.querySelectorAll<HTMLImageElement>(".hero-bg img");
+	const vividImgs = document.querySelectorAll<HTMLImageElement>(".vivid-layer img");
+	const heroCount = bgImgs.length;
+	let heroIdx = 0;
+	let paused = false;
+	let timer: ReturnType<typeof setInterval>;
+	const INTERVAL = 6000;
+
+	function showHero(idx: number) {
+		bgImgs.forEach((img, i) => img.classList.toggle("active", i === idx));
+		vividImgs.forEach((img, i) => img.classList.toggle("active", i === idx));
+	}
+
+	function nextHero() {
+		heroIdx = (heroIdx + 1) % heroCount;
+		showHero(heroIdx);
+	}
+
+	function prevHero() {
+		heroIdx = (heroIdx - 1 + heroCount) % heroCount;
+		showHero(heroIdx);
+	}
+
+	function resetTimer() {
+		clearInterval(timer);
+		if (!paused) timer = setInterval(nextHero, INTERVAL);
+	}
+
+	// Init first image
+	showHero(0);
+	timer = setInterval(nextHero, INTERVAL);
+
+	const btnPrev = document.getElementById("hero-prev");
+	const btnNext = document.getElementById("hero-next");
+	const btnPause = document.getElementById("hero-pause");
+	const iconPause = btnPause?.querySelector(".icon-pause") as HTMLElement | null;
+	const iconPlay = btnPause?.querySelector(".icon-play") as HTMLElement | null;
+
+	btnPrev?.addEventListener("click", () => { prevHero(); resetTimer(); });
+	btnNext?.addEventListener("click", () => { nextHero(); resetTimer(); });
+	btnPause?.addEventListener("click", () => {
+		paused = !paused;
+		if (paused) {
+			clearInterval(timer);
+		} else {
+			timer = setInterval(nextHero, INTERVAL);
+		}
+		if (iconPause) iconPause.style.display = paused ? "none" : "";
+		if (iconPlay) iconPlay.style.display = paused ? "" : "none";
+	});
+
+	// ---- Gallery ----
 	const shots = document.querySelectorAll(".shot");
 	const scrollCue = document.querySelector(".scroll-cue");
 
@@ -532,6 +700,24 @@ const heroDelayCSS = heroImages
 		if (!cueHidden && window.scrollY > 100) {
 			cueHidden = true;
 			scrollCue?.classList.add("hidden");
+		}
+	});
+
+	// Arrow key + Escape navigation for lightbox
+	const totalPhotos = document.querySelectorAll(".lightbox").length;
+	document.addEventListener("keydown", (e) => {
+		const match = location.hash.match(/^#photo-(\d+)$/);
+		if (!match) return;
+		const idx = Number.parseInt(match[1], 10);
+		if (e.key === "Escape") {
+			e.preventDefault();
+			location.hash = "#";
+		} else if (e.key === "ArrowRight" && idx < totalPhotos - 1) {
+			e.preventDefault();
+			location.hash = `#photo-${idx + 1}`;
+		} else if (e.key === "ArrowLeft" && idx > 0) {
+			e.preventDefault();
+			location.hash = `#photo-${idx - 1}`;
 		}
 	});
 </script>
