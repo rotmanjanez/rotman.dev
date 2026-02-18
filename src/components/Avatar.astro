@@ -13,10 +13,30 @@ const { class: className } = Astro.props;
   <rect id="hair-top" x="4" y="4" width="56" height="7" fill="#d4b878" transform="rotate(-5 32 7)"/>
   <path id="left-eye" d="M18 32 Q22 28 26 32" stroke="#3a2718" stroke-width="2" fill="none" stroke-linecap="round"/>
   <path id="right-eye" d="M38 32 Q42 28 46 32" stroke="#3a2718" stroke-width="2" fill="none" stroke-linecap="round"/>
-  <line id="mouth" x1="28" y1="46" x2="36" y2="46" stroke="#c49080" stroke-width="1.2" stroke-linecap="round"/>
+  <path id="mouth" d="M28 46 L36 46" stroke="#c49080" stroke-width="1.2" fill="none" stroke-linecap="round"/>
 </svg>
 
 <script>
+  const BLINK_DURATION = 150;
+  const BLINK_MIN_INTERVAL = 2000;
+  const BLINK_MAX_EXTRA = 4000;
+  const SMILE_DURATION = 800;
+  const SMILE_MIN_INTERVAL = 6000;
+  const SMILE_MAX_EXTRA = 8000;
+  const SMILE_INITIAL_MIN = 3000;
+  const SMILE_INITIAL_MAX_EXTRA = 4000;
+  const HAIR_MIN_INTERVAL = 5000;
+  const HAIR_MAX_EXTRA = 7000;
+  const HAIR_INITIAL_MIN = 2000;
+  const HAIR_INITIAL_MAX_EXTRA = 3000;
+
+  const MOUTH_STRAIGHT = "M28 46 L36 46";
+  const MOUTH_SMILE = "M28 44 Q32 48 36 44";
+  const EYE_LEFT_OPEN = "M18 32 Q22 28 26 32";
+  const EYE_RIGHT_OPEN = "M38 32 Q42 28 46 32";
+  const EYE_LEFT_CLOSED = "M18 32 Q22 33 26 32";
+  const EYE_RIGHT_CLOSED = "M38 32 Q42 33 46 32";
+
   let activeTimeouts = new Set<number>();
   let activeRoot: Element | null = null;
 
@@ -34,7 +54,7 @@ const { class: className } = Astro.props;
     const root = document.querySelector('svg.avatar');
     const le = document.getElementById('left-eye');
     const re = document.getElementById('right-eye');
-    let mo: Element | null = document.getElementById('mouth');
+    const mo = document.getElementById('mouth');
 
     if (!root || !le || !re || !mo) return;
     activeRoot = root;
@@ -50,50 +70,32 @@ const { class: className } = Astro.props;
     };
 
     function blink() {
-      le!.setAttribute('d', 'M18 32 Q22 33 26 32');
-      re!.setAttribute('d', 'M38 32 Q42 33 46 32');
+      le!.setAttribute('d', EYE_LEFT_CLOSED);
+      re!.setAttribute('d', EYE_RIGHT_CLOSED);
       schedule(() => {
-        le!.setAttribute('d', 'M18 32 Q22 28 26 32');
-        re!.setAttribute('d', 'M38 32 Q42 28 46 32');
-      }, 150);
+        le!.setAttribute('d', EYE_LEFT_OPEN);
+        re!.setAttribute('d', EYE_RIGHT_OPEN);
+      }, BLINK_DURATION);
     }
 
     function smile() {
-      const p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-      p.setAttribute('d', 'M28 44 Q32 48 36 44');
-      p.setAttribute('stroke', '#c49080');
-      p.setAttribute('stroke-width', '1.2');
-      p.setAttribute('fill', 'none');
-      p.setAttribute('stroke-linecap', 'round');
-      p.setAttribute('id', 'mouth');
-      mo!.replaceWith(p);
-      mo = p;
+      mo!.setAttribute('d', MOUTH_SMILE);
       schedule(() => {
-        const l = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-        l.setAttribute('x1', '28');
-        l.setAttribute('y1', '46');
-        l.setAttribute('x2', '36');
-        l.setAttribute('y2', '46');
-        l.setAttribute('stroke', '#c49080');
-        l.setAttribute('stroke-width', '1.2');
-        l.setAttribute('stroke-linecap', 'round');
-        l.setAttribute('id', 'mouth');
-        mo!.replaceWith(l);
-        mo = l;
-      }, 800);
+        mo!.setAttribute('d', MOUTH_STRAIGHT);
+      }, SMILE_DURATION);
     }
 
     function blinkLoop() {
       blink();
-      schedule(blinkLoop, 2000 + Math.random() * 4000);
+      schedule(blinkLoop, BLINK_MIN_INTERVAL + Math.random() * BLINK_MAX_EXTRA);
     }
     schedule(blinkLoop, 0);
 
     function smileLoop() {
       smile();
-      schedule(smileLoop, 6000 + Math.random() * 8000);
+      schedule(smileLoop, SMILE_MIN_INTERVAL + Math.random() * SMILE_MAX_EXTRA);
     }
-    schedule(smileLoop, 3000 + Math.random() * 4000);
+    schedule(smileLoop, SMILE_INITIAL_MIN + Math.random() * SMILE_INITIAL_MAX_EXTRA);
 
     const hairBase = document.getElementById('hair-base');
     const hairTop = document.getElementById('hair-top');
@@ -124,9 +126,9 @@ const { class: className } = Astro.props;
 
       function surpriseLoop() {
         hairSurprise();
-        schedule(surpriseLoop, 5000 + Math.random() * 7000);
+        schedule(surpriseLoop, HAIR_MIN_INTERVAL + Math.random() * HAIR_MAX_EXTRA);
       }
-      schedule(surpriseLoop, 2000 + Math.random() * 3000);
+      schedule(surpriseLoop, HAIR_INITIAL_MIN + Math.random() * HAIR_INITIAL_MAX_EXTRA);
     }
 
     const cleanup = () => {

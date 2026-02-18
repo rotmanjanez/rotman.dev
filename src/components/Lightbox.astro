@@ -1,0 +1,145 @@
+---
+interface Props {
+	images: { src: string; alt: string }[];
+}
+
+const { images } = Astro.props;
+---
+
+{images.map((img, i) => {
+	const prev = i > 0 ? `#photo-${i - 1}` : null;
+	const next = i < images.length - 1 ? `#photo-${i + 1}` : null;
+
+	return (
+		<div class="lightbox" id={`photo-${i}`} data-index={i}>
+			<a href="#" class="lightbox-bg" aria-label="Close"></a>
+			<div class="lightbox-inner">
+				{prev && <a href={prev} class="lightbox-nav lightbox-prev" aria-label="Previous">&lsaquo;</a>}
+				<img src={img.src} alt={img.alt} class="lightbox-img" loading="lazy" />
+				{next && <a href={next} class="lightbox-nav lightbox-next" aria-label="Next">&rsaquo;</a>}
+			</div>
+			<a href="#" class="lightbox-close" aria-label="Close">&times;</a>
+		</div>
+	);
+})}
+
+<div class="progress-bar" aria-hidden="true"></div>
+
+<style>
+	.lightbox {
+		position: fixed;
+		inset: 0;
+		z-index: 300;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		opacity: 0;
+		pointer-events: none;
+		transition: opacity 0.3s ease;
+	}
+
+	.lightbox:target {
+		opacity: 1;
+		pointer-events: auto;
+	}
+
+	.lightbox-bg {
+		position: absolute;
+		inset: 0;
+		background: rgba(5, 5, 5, 0.96);
+		cursor: zoom-out;
+	}
+
+	.lightbox-inner {
+		position: relative;
+		z-index: 1;
+		display: flex;
+		align-items: center;
+		gap: 16px;
+		max-width: 94vw;
+		max-height: 92vh;
+	}
+
+	.lightbox-img {
+		max-width: 85vw;
+		max-height: 90vh;
+		object-fit: contain;
+		border-radius: 2px;
+	}
+
+	.lightbox-nav {
+		color: #666;
+		font-size: 48px;
+		text-decoration: none;
+		line-height: 1;
+		padding: 20px 8px;
+		transition: color 0.2s;
+		user-select: none;
+	}
+
+	.lightbox-nav:hover {
+		color: #fff;
+		text-decoration: none;
+	}
+
+	.lightbox-close {
+		position: absolute;
+		top: 20px;
+		right: 28px;
+		z-index: 2;
+		color: #888;
+		font-size: 32px;
+		text-decoration: none;
+		line-height: 1;
+		transition: color 0.3s;
+	}
+
+	.lightbox-close:hover {
+		color: #fff;
+		text-decoration: none;
+	}
+
+	/* Scroll progress bar */
+	.progress-bar {
+		position: fixed;
+		top: 0;
+		left: 0;
+		height: 2px;
+		width: 0%;
+		background: #c8281e;
+		z-index: 200;
+		transition: width 0.1s linear;
+		box-shadow: 0 0 8px rgba(200, 40, 30, 0.6);
+	}
+</style>
+
+<script>
+	// Scroll progress bar
+	const progressBar = document.querySelector(".progress-bar") as HTMLElement | null;
+	if (progressBar) {
+		window.addEventListener("scroll", () => {
+			const scrolled = window.scrollY;
+			const total = document.documentElement.scrollHeight - window.innerHeight;
+			const pct = total > 0 ? (scrolled / total) * 100 : 0;
+			progressBar.style.width = `${pct}%`;
+		});
+	}
+
+	// Arrow key + Escape navigation for lightbox
+	const totalPhotos = document.querySelectorAll(".lightbox").length;
+	document.addEventListener("keydown", (e) => {
+		const match = location.hash.match(/^#photo-(\d+)$/);
+		if (!match) return;
+		const idx = Number.parseInt(match[1], 10);
+		if (e.key === "Escape") {
+			e.preventDefault();
+			location.hash = "#";
+		} else if (e.key === "ArrowRight" && idx < totalPhotos - 1) {
+			e.preventDefault();
+			location.hash = `#photo-${idx + 1}`;
+		} else if (e.key === "ArrowLeft" && idx > 0) {
+			e.preventDefault();
+			location.hash = `#photo-${idx - 1}`;
+		}
+	});
+</script>

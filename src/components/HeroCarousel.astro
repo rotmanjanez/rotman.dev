@@ -1,0 +1,269 @@
+---
+import { Image } from "astro:assets";
+import type { ImageMetadata } from "astro";
+
+interface Props {
+	heroImages: ImageMetadata[];
+}
+
+const { heroImages } = Astro.props;
+---
+
+<div class="stage-title">
+	<div class="hero-bg">
+		{heroImages.map((img, i) => (
+			<Image src={img} alt="" width={1920} height={1280} loading={i === 0 ? "eager" : "lazy"} class={i === 0 ? "active" : ""} />
+		))}
+	</div>
+	<div class="hero-overlay"></div>
+	<div class="vivid-layer">
+		{heroImages.map((img, i) => (
+			<Image src={img} alt="" width={1920} height={1280} loading={i === 0 ? "eager" : "lazy"} class={i === 0 ? "active" : ""} />
+		))}
+	</div>
+	<h1 class="title-text">Photo</h1>
+	<div class="hero-controls" id="hero-controls">
+		<button class="hero-btn" id="hero-prev" aria-label="Previous image">
+			<svg width="10" height="16" viewBox="0 0 10 16" fill="none"><path d="M8 2 L2 8 L8 14" stroke="currentColor" stroke-width="1.2" /></svg>
+		</button>
+		<button class="hero-btn" id="hero-pause" aria-label="Pause slideshow">
+			<svg class="icon-pause" width="10" height="12" viewBox="0 0 10 12" fill="none"><rect x="1" y="1" width="2.5" height="10" fill="currentColor" /><rect x="6.5" y="1" width="2.5" height="10" fill="currentColor" /></svg>
+			<svg class="icon-play" width="10" height="12" viewBox="0 0 10 12" fill="none" style="display:none"><path d="M1 1 L9 6 L1 11Z" fill="currentColor" /></svg>
+		</button>
+		<button class="hero-btn" id="hero-next" aria-label="Next image">
+			<svg width="10" height="16" viewBox="0 0 10 16" fill="none"><path d="M2 2 L8 8 L2 14" stroke="currentColor" stroke-width="1.2" /></svg>
+		</button>
+	</div>
+	<div class="scroll-cue">
+		<span class="scroll-cue-text">Scroll</span>
+		<div class="scroll-cue-arrow">
+			<svg width="14" height="24" viewBox="0 0 14 24" fill="none">
+				<path d="M7 0 L7 20 M1 15 L7 22 L13 15" stroke="currentColor" stroke-width="1.5" />
+			</svg>
+		</div>
+	</div>
+</div>
+
+<style>
+	.stage-title {
+		height: 100vh;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		position: relative;
+		overflow: hidden;
+	}
+
+	.hero-bg {
+		position: absolute;
+		inset: 0;
+		z-index: 0;
+	}
+
+	.hero-bg img {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		filter: contrast(1.2) saturate(0.4) brightness(0.9);
+		opacity: 0;
+		transition: opacity 1s ease;
+	}
+
+	.hero-bg img:global(.active) {
+		opacity: 1;
+	}
+
+	.vivid-layer {
+		position: absolute;
+		inset: 0;
+		z-index: 3;
+		overflow: hidden;
+		-webkit-mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='100%' height='100%'><text font-family='Bebas Neue,Impact,sans-serif' font-size='22vw' fill='white' x='50%' y='55%' text-anchor='middle' dominant-baseline='middle'>Photo</text></svg>");
+		-webkit-mask-repeat: no-repeat;
+		-webkit-mask-size: 100% 100%;
+		mask-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='100%' height='100%'><text font-family='Bebas Neue,Impact,sans-serif' font-size='22vw' fill='white' x='50%' y='55%' text-anchor='middle' dominant-baseline='middle'>Photo</text></svg>");
+		mask-repeat: no-repeat;
+		mask-size: 100% 100%;
+	}
+
+	.vivid-layer img {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		filter: contrast(1.05) saturate(0.5) brightness(1.4);
+		opacity: 0;
+		transition: opacity 1s ease;
+	}
+
+	.vivid-layer img:global(.active) {
+		opacity: 1;
+	}
+
+	.hero-overlay {
+		position: absolute;
+		inset: 0;
+		background:
+			radial-gradient(ellipse at center, rgba(5,5,5,0.1) 0%, rgba(5,5,5,0.5) 100%),
+			linear-gradient(to bottom, transparent 60%, #050505 100%);
+		z-index: 1;
+	}
+
+	.title-text {
+		position: relative;
+		z-index: 4;
+		font-family: 'Bebas Neue', Impact, sans-serif;
+		font-size: clamp(120px, 22vw, 320px);
+		color: transparent;
+		line-height: 1;
+		letter-spacing: 0.02em;
+		opacity: 0;
+		animation: titleIn 1.2s cubic-bezier(0.22, 1, 0.36, 1) 0.3s forwards;
+	}
+
+	@keyframes titleIn {
+		from {
+			opacity: 0;
+			transform: translateY(40px) scaleY(1.1);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0) scaleY(1);
+		}
+	}
+
+	/* ---- Hero controls ---- */
+	.hero-controls {
+		position: absolute;
+		bottom: 28px;
+		right: 28px;
+		z-index: 10;
+		display: flex;
+		align-items: center;
+		gap: 16px;
+		opacity: 0;
+		animation: cueIn 0.6s ease 1.2s forwards;
+	}
+
+	.hero-btn {
+		background: none;
+		border: none;
+		color: rgba(255, 255, 255, 0.3);
+		padding: 4px;
+		cursor: pointer;
+		transition: color 0.4s ease;
+	}
+
+	.hero-btn:hover {
+		color: rgba(255, 255, 255, 0.85);
+	}
+
+	/* ---- Scroll cue ---- */
+	.scroll-cue {
+		position: absolute;
+		bottom: 40px;
+		left: 50%;
+		transform: translateX(-50%);
+		z-index: 10;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 10px;
+		opacity: 0;
+		animation: cueIn 0.6s ease 1.2s forwards;
+		transition: opacity 0.5s;
+	}
+
+	.scroll-cue:global(.hidden) {
+		opacity: 0 !important;
+		pointer-events: none;
+	}
+
+	.scroll-cue-text {
+		font-size: 9px;
+		text-transform: uppercase;
+		letter-spacing: 0.2em;
+		color: #999;
+	}
+
+	.scroll-cue-arrow {
+		color: #c8281e;
+		animation: bounce 2s ease-in-out infinite;
+	}
+
+	@keyframes cueIn {
+		to { opacity: 1; }
+	}
+
+	@keyframes bounce {
+		0%, 100% { transform: translateY(0); }
+		50% { transform: translateY(6px); }
+	}
+</style>
+
+<script>
+	const HERO_INTERVAL_MS = 6000;
+	const SCROLL_CUE_HIDE_THRESHOLD = 100;
+
+	const bgImgs = document.querySelectorAll<HTMLImageElement>(".hero-bg img");
+	const vividImgs = document.querySelectorAll<HTMLImageElement>(".vivid-layer img");
+	const heroCount = bgImgs.length;
+	let heroIdx = 0;
+	let paused = false;
+	let timer: ReturnType<typeof setInterval>;
+
+	function showHero(idx: number) {
+		bgImgs.forEach((img, i) => img.classList.toggle("active", i === idx));
+		vividImgs.forEach((img, i) => img.classList.toggle("active", i === idx));
+	}
+
+	function nextHero() {
+		heroIdx = (heroIdx + 1) % heroCount;
+		showHero(heroIdx);
+	}
+
+	function prevHero() {
+		heroIdx = (heroIdx - 1 + heroCount) % heroCount;
+		showHero(heroIdx);
+	}
+
+	function resetTimer() {
+		clearInterval(timer);
+		if (!paused) timer = setInterval(nextHero, HERO_INTERVAL_MS);
+	}
+
+	showHero(0);
+	timer = setInterval(nextHero, HERO_INTERVAL_MS);
+
+	const btnPrev = document.getElementById("hero-prev");
+	const btnNext = document.getElementById("hero-next");
+	const btnPause = document.getElementById("hero-pause");
+	const iconPause = btnPause?.querySelector(".icon-pause") as HTMLElement | null;
+	const iconPlay = btnPause?.querySelector(".icon-play") as HTMLElement | null;
+
+	btnPrev?.addEventListener("click", () => { prevHero(); resetTimer(); });
+	btnNext?.addEventListener("click", () => { nextHero(); resetTimer(); });
+	btnPause?.addEventListener("click", () => {
+		paused = !paused;
+		if (paused) {
+			clearInterval(timer);
+		} else {
+			timer = setInterval(nextHero, HERO_INTERVAL_MS);
+		}
+		if (iconPause) iconPause.style.display = paused ? "none" : "";
+		if (iconPlay) iconPlay.style.display = paused ? "" : "none";
+	});
+
+	// Hide scroll cue after scrolling past hero
+	const scrollCue = document.querySelector(".scroll-cue");
+	let cueHidden = false;
+	window.addEventListener("scroll", () => {
+		if (!cueHidden && window.scrollY > SCROLL_CUE_HIDE_THRESHOLD) {
+			cueHidden = true;
+			scrollCue?.classList.add("hidden");
+		}
+	});
+</script>

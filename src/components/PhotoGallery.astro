@@ -1,0 +1,133 @@
+---
+import { Image } from "astro:assets";
+import type { ImageMetadata } from "astro";
+
+interface Props {
+	entries: { meta: ImageMetadata; filename: string }[];
+}
+
+const { entries } = Astro.props;
+
+const formatImageName = (src: string): string => {
+	const fileName = src.split("/").pop() ?? src;
+	return fileName
+		.replace(/\.[^.]+$/, "")
+		.replace(/[._-]+/g, " ")
+		.replace(/\s+/g, " ")
+		.trim();
+};
+---
+
+<div class="gallery">
+	{entries.map((entry, i) => {
+		const altText = `Live event photo ${String(i + 1).padStart(2, "0")}: ${formatImageName(entry.filename)}`;
+		const num = String(i + 1).padStart(2, "0");
+
+		return (
+			<a href={`#photo-${i}`} class="shot" data-index={i}>
+				<Image src={entry.meta} alt={altText} width={900} height={Math.round(900 * (entry.meta.height / entry.meta.width))} loading={i < 6 ? "eager" : "lazy"} />
+				<div class="shot-num">{num}</div>
+			</a>
+		);
+	})}
+</div>
+
+<style>
+	.gallery {
+		max-width: 1400px;
+		margin: 0 auto;
+		padding: 0 28px;
+		columns: 4;
+		column-gap: 6px;
+	}
+
+	.shot {
+		position: relative;
+		display: block;
+		overflow: hidden;
+		cursor: pointer;
+		opacity: 0;
+		transform: translateY(30px);
+		break-inside: avoid;
+		margin-bottom: 6px;
+		text-decoration: none;
+	}
+
+	.shot img {
+		width: 100%;
+		height: auto;
+		display: block;
+		filter: contrast(1.15) saturate(0.6) brightness(0.88);
+		transition: filter 0.6s ease, transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+	}
+
+	.shot:hover img {
+		filter: contrast(1.1) saturate(0.9) brightness(1);
+		transform: scale(1.04);
+	}
+
+	.shot-num {
+		position: absolute;
+		bottom: 10px;
+		right: 12px;
+		font-size: 9px;
+		color: rgba(255, 255, 255, 0.25);
+		letter-spacing: 0.1em;
+		font-weight: 400;
+		z-index: 2;
+		transition: color 0.3s;
+	}
+
+	.shot:hover .shot-num {
+		color: rgba(255, 255, 255, 0.5);
+	}
+
+	.shot::after {
+		content: "";
+		position: absolute;
+		inset: 0;
+		background: linear-gradient(to top, rgba(5,5,5,0.3) 0%, transparent 40%);
+		pointer-events: none;
+	}
+
+	@media (max-width: 1100px) {
+		.gallery {
+			columns: 3;
+		}
+	}
+
+	@media (max-width: 700px) {
+		.gallery {
+			columns: 2;
+			padding: 0 12px;
+		}
+
+		.shot {
+			margin-bottom: 4px;
+		}
+	}
+</style>
+
+<script>
+	const REVEAL_THRESHOLD = 0.1;
+	const REVEAL_ROOT_MARGIN = "0px 0px -60px 0px";
+
+	const shots = document.querySelectorAll(".shot");
+
+	const observer = new IntersectionObserver(
+		(entries) => {
+			entries.forEach((entry) => {
+				if (entry.isIntersecting) {
+					const el = entry.target as HTMLElement;
+					el.style.transition = "opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1), transform 0.8s cubic-bezier(0.22, 1, 0.36, 1)";
+					el.style.opacity = "1";
+					el.style.transform = "translateY(0)";
+					observer.unobserve(el);
+				}
+			});
+		},
+		{ threshold: REVEAL_THRESHOLD, rootMargin: REVEAL_ROOT_MARGIN }
+	);
+
+	shots.forEach((shot) => observer.observe(shot));
+</script>
