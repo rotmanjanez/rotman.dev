@@ -1,11 +1,13 @@
 ---
+import "@fontsource/instrument-serif/400-italic.css";
+import "@fontsource/azeret-mono/400.css";
 import Avatar from "../components/Avatar.astro";
 import Base from "../layouts/Base.astro";
 
 const year = new Date().getFullYear();
 ---
 
-<Base title="Janez Rotman">
+<Base title="Janez Rotman" description="MSc Informatics at TUM. Compiler construction, low-level systems, and event photography.">
 	<Fragment slot="head">
 		<meta name="generator" content={Astro.generator} />
 		<meta name="color-scheme" content="light dark" />
@@ -98,9 +100,11 @@ const year = new Date().getFullYear();
 	}
 
 	header h1 {
-		font-size: 1.4rem;
-		font-weight: 600;
-		letter-spacing: -0.02em;
+		font-family: "Instrument Serif", Georgia, serif;
+		font-size: 1.8rem;
+		font-weight: 400;
+		font-style: italic;
+		letter-spacing: -0.01em;
 		margin-bottom: 0.15rem;
 	}
 
@@ -132,10 +136,11 @@ const year = new Date().getFullYear();
 	}
 
 	section h2 {
-		font-size: 0.8rem;
-		font-weight: 600;
+		font-family: "Azeret Mono", monospace;
+		font-size: 0.7rem;
+		font-weight: 400;
 		text-transform: uppercase;
-		letter-spacing: 0.06em;
+		letter-spacing: 0.12em;
 		color: var(--fg-muted);
 		margin-bottom: 0.6rem;
 		padding-bottom: 0.3rem;

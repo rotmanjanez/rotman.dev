@@ -7,6 +7,7 @@
       "dependencies": {
         "@fontsource/azeret-mono": "^5.2.11",
         "@fontsource/bebas-neue": "^5.2.7",
+        "@fontsource/instrument-serif": "^5.2.8",
         "astro": "^5.17.1",
         "sharp": "^0.34.5",
       },
@@ -112,6 +113,8 @@
     "@fontsource/azeret-mono": ["@fontsource/azeret-mono@5.2.11", "", {}, "sha512-DlufUsIj1AK6Z/26X/1bZj4SFsfuE6Cb1wYToGX3HoxTYrNzN0TUQ3Yv8bJ3kmvO3vOTCgOjFV81OJe2FERrUg=="],
 
     "@fontsource/bebas-neue": ["@fontsource/bebas-neue@5.2.7", "", {}, "sha512-DsmBrmq55d9BCU0mt4DT4RZDdH8vhWRKEUOfbuNB1EEjMuwbtFvM8N+3gIlkYSFbsb10P8Q19BV5OdpMu2h0fA=="],
+
+    "@fontsource/instrument-serif": ["@fontsource/instrument-serif@5.2.8", "", {}, "sha512-s+bkz+syj2rO00Rmq9g0P+PwuLig33DR1xDR8pTWmovH1pUjwnncrFk++q9mmOex8fUQ7oW80gPpPDaw7V1MMw=="],
 
     "@img/colour": ["@img/colour@1.0.0", "", {}, "sha512-A5P/LfWGFSl6nsckYtjw9da+19jB8hkJ6ACTGcDfEJ0aE+l2n2El7dsVM7UVHZQ9s2lmYMWlrS21YLy2IR1LUw=="],
 
